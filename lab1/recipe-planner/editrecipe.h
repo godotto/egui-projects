@@ -53,7 +53,7 @@ private:
     // layouts
     QVBoxLayout *m_mainLayout;
     QHBoxLayout *m_nameLayout;
-    QHBoxLayout *m_descriptionLayout;
+    QVBoxLayout *m_descriptionLayout;
     QVBoxLayout *m_ingredientLayout;
     QHBoxLayout *m_ingredientNameLayout;
     QHBoxLayout *m_ingredientQuantityLayout;

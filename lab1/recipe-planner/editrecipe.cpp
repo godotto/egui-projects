@@ -4,7 +4,7 @@ EditRecipe::EditRecipe(EditMode mode, QWidget *parent)
     : QDialog(parent)
 {
     // set window size
-    setMinimumSize(300, 500);
+    setMinimumSize(340, 500);
     resize(350, 600);
 
     // set window title
@@ -61,7 +61,7 @@ void EditRecipe::createLayouts()
     // layouts definition
     m_mainLayout = new QVBoxLayout(this);
     m_buttonLayout = new QHBoxLayout(this);
-    m_descriptionLayout = new QHBoxLayout(this);
+    m_descriptionLayout = new QVBoxLayout(this);
     m_ingredientLayout = new QVBoxLayout(this);
     m_nameLayout = new QHBoxLayout(this);
     m_ingredientQuantityLayout = new QHBoxLayout(this);
@@ -93,15 +93,21 @@ void EditRecipe::createLayouts()
     m_ingredientButtonLayout->addWidget(m_addUpdateIngredientButton);
     m_ingredientButtonLayout->addWidget(m_deleteIngredientButton);
 
+    m_ingredientButtonLayout->setAlignment(Qt::AlignRight);
+
     // ingredients group box
     m_ingredientLayout->addLayout(m_ingredientNameLayout);
     m_ingredientLayout->addLayout(m_ingredientQuantityLayout);
     m_ingredientLayout->addLayout(m_ingredientButtonLayout);
+
     m_ingredientsBox->setLayout(m_ingredientLayout);
+    m_ingredientLayout->setContentsMargins(20, 20, 20, 20);
 
     // button layout
     m_buttonLayout->addWidget(m_confirmUpdateRecipeButton);
     m_buttonLayout->addWidget(m_cancelButton);
+
+    m_buttonLayout->setAlignment(Qt::AlignRight);
 
     // main layout
     m_mainLayout->addLayout(m_nameLayout);
