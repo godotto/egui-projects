@@ -1,6 +1,8 @@
 #ifndef RECIPEPLANNER_H
 #define RECIPEPLANNER_H
 
+#include "editrecipe.h"
+
 #include <QMainWindow>
 
 #include <QListWidget>
@@ -44,6 +46,13 @@ private:
 
 public:
     RecipePlanner(QWidget *parent = nullptr);
+
+private slots:
+    void slotCloseApplication();    // close window main window with application
+    void slotAddRecipe();           // open add recipe window
+    void slotEditRecipe();          // open edit selected recipe
+    void slotDeleteRecipe();        // open delete selected recipes
+    void slotCreateMenu();          // open create menu window
 
 };
 #endif // RECIPEPLANNER_H

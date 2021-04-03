@@ -26,6 +26,32 @@ RecipePlanner::RecipePlanner(QWidget *parent)
     m_centralWidget->setLayout(m_mainLayout);
 }
 
+void RecipePlanner::slotCloseApplication()
+{
+    close();
+}
+
+void RecipePlanner::slotAddRecipe()
+{
+    EditRecipe *editRecipeWindow = new EditRecipe(EditRecipe::Add, this);
+    editRecipeWindow->exec();
+}
+
+void RecipePlanner::slotEditRecipe()
+{
+
+}
+
+void RecipePlanner::slotDeleteRecipe()
+{
+
+}
+
+void RecipePlanner::slotCreateMenu()
+{
+
+}
+
 void RecipePlanner::createButtons()
 {
     // buttons definition
@@ -37,6 +63,9 @@ void RecipePlanner::createButtons()
     m_addButton->setToolTip("Add new recipe");
     m_editButton->setToolTip("Edit selected recipe");
     m_deleteButton->setToolTip("Delete selected recipes");
+
+    // connect buttons
+    connect(m_addButton, &QPushButton::clicked, this, &RecipePlanner::slotAddRecipe);
 }
 
 void RecipePlanner::createLayouts()
@@ -70,6 +99,9 @@ void RecipePlanner::createActions()
     // add shortcuts for actions in menu
     m_createMenuAction->setShortcut(QKeySequence::New);
     m_exitAction->setShortcut(QKeySequence::Quit);
+
+    // connect slots
+    connect(m_exitAction, &QAction::triggered, this, &RecipePlanner::slotCloseApplication);
 }
 
 void RecipePlanner::createMenu()
