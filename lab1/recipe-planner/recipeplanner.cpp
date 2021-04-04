@@ -136,10 +136,42 @@ void RecipePlanner::createModel()
     // create root item as the model is a tree
     auto *modelRoot = m_recipesModel->invisibleRootItem();
 
-    for (auto &&recipe : m_recipesJson.keys())
+    int currentRow = 0; // current row in the tree
+
+    for (auto &&recipeName : m_recipesJson.keys())
     {
-        auto *nameOfRecipe = new QStandardItem(recipe);
-        modelRoot->appendRow(nameOfRecipe);
+        // add the name of recipe to the tree
+        modelRoot->appendRow(new QStandardItem(recipeName));
+        auto recipeItem = modelRoot->child(currentRow);
+
+        // get json object with currently processed recipe
+        auto recipeJsonObject = m_recipesJson[recipeName].toObject();
+
+        // add description of recipe to the item with the name
+        recipeItem->appendRow(new QStandardItem("recipe"));
+        auto recipeDescription = modelRoot->child(currentRow)->child(0);
+        auto recipeDescriptionArray = recipeJsonObject["recipe"].toArray();
+
+        for (auto &&line : recipeDescriptionArray)
+            recipeDescription->appendRow(new QStandardItem(line.toString()));
+
+        int currentRowIngredient = 1; // current index of ingredient
+
+        // add ingredients to the item with the name
+        for (auto &&ingredient : recipeJsonObject.keys())
+        {
+            if (ingredient != "recipe") // if it is description then ignore it
+            {
+                recipeItem->appendRow(new QStandardItem(ingredient));
+                recipeItem->child(currentRowIngredient)->appendRow(new QStandardItem(recipeJsonObject[ingredient].toString()));
+
+                // go to the next ingredient
+                currentRowIngredient++;
+            }
+        }
+
+        // go to the next recipe
+        currentRow++;
     }
 }
 

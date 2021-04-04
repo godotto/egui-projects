@@ -11,6 +11,7 @@
 #include <QFile>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QJsonArray>
 #include <QStandardItemModel>
 
 class RecipePlanner : public QMainWindow
