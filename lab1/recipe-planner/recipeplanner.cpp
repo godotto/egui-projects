@@ -3,6 +3,9 @@
 RecipePlanner::RecipePlanner(QWidget *parent)
     : QMainWindow(parent)
 {
+    // load recipes from json
+    readRecipesFromJson();
+
     // set window size
     setMinimumSize(400, 330);
     resize(600, 500);
@@ -14,9 +17,8 @@ RecipePlanner::RecipePlanner(QWidget *parent)
     m_centralWidget = new QWidget(this);
     setCentralWidget(m_centralWidget);
 
-    // list defiinition
-    m_recipeList = new QListWidget(m_centralWidget);
-
+    createModel();
+    createList();
     createButtons();
     createLayouts();
     createActions();
@@ -33,7 +35,7 @@ void RecipePlanner::slotCloseApplication()
 
 void RecipePlanner::slotAddRecipe()
 {
-    EditRecipe *editRecipeWindow = new EditRecipe(EditRecipe::Add, this);
+    auto *editRecipeWindow = new EditRecipe(EditRecipe::Add, this);
     editRecipeWindow->exec();
 }
 
@@ -52,6 +54,11 @@ void RecipePlanner::slotCreateMenu()
 
 }
 
+void RecipePlanner::slotLoadFile()
+{
+
+}
+
 void RecipePlanner::createButtons()
 {
     // buttons definition
@@ -63,6 +70,10 @@ void RecipePlanner::createButtons()
     m_addButton->setToolTip("Add new recipe");
     m_editButton->setToolTip("Edit selected recipe");
     m_deleteButton->setToolTip("Delete selected recipes");
+
+    // disable edit and delete buttons on default
+    m_editButton->setDisabled(true);
+    m_deleteButton->setDisabled(true);
 
     // connect buttons
     connect(m_addButton, &QPushButton::clicked, this, &RecipePlanner::slotAddRecipe);
@@ -83,7 +94,7 @@ void RecipePlanner::createLayouts()
     m_buttonLayout->addWidget(m_deleteButton);
 
     // add list and button layout to the main layout
-    m_mainLayout->addWidget(m_recipeList);
+    m_mainLayout->addWidget(m_recipesListView);
     m_mainLayout->addLayout(m_buttonLayout);
 }
 
@@ -92,12 +103,14 @@ void RecipePlanner::createActions()
     // actions definition
     m_createMenuAction = new QAction("&Create menu", this);
     m_exitAction = new QAction("&Exit", this);
+    m_openFile = new QAction("&Open", this);
 
     // set actions status tips
     m_createMenuAction->setStatusTip("Create menu from selected recipes");
 
     // add shortcuts for actions in menu
     m_createMenuAction->setShortcut(QKeySequence::New);
+    m_openFile->setShortcut(QKeySequence::Open);
     m_exitAction->setShortcut(QKeySequence::Quit);
 
     // connect slots
@@ -111,5 +124,54 @@ void RecipePlanner::createMenu()
 
     // action assignment
     m_fileMenu->addAction(m_createMenuAction);
+    m_fileMenu->addAction(m_openFile);
     m_fileMenu->addAction(m_exitAction);
+}
+
+void RecipePlanner::createModel()
+{
+    // model definition
+    m_recipesModel = new QStandardItemModel(this);
+
+    // create root item as the model is a tree
+    auto *modelRoot = m_recipesModel->invisibleRootItem();
+
+    for (auto &&recipe : m_recipesJson.keys())
+    {
+        auto *nameOfRecipe = new QStandardItem(recipe);
+        modelRoot->appendRow(nameOfRecipe);
+    }
+}
+
+void RecipePlanner::createList()
+{
+    // list view definition
+    m_recipesListView = new QListView(m_centralWidget);
+
+    // set model with recipes as model for the list
+    m_recipesListView->setModel(m_recipesModel);
+
+    // set lists properties
+    m_recipesListView->setSelectionMode(QAbstractItemView::MultiSelection);
+    m_recipesListView->setEditTriggers(QAbstractItemView::EditTrigger::NoEditTriggers);
+}
+
+bool RecipePlanner::readRecipesFromJson(QString fileName)
+{
+    // open selected file or deafualt - recipes.json
+    QFile loadFile(fileName);
+
+    if (!loadFile.open(QIODevice::ReadOnly))
+    {
+        qFatal("Could not open file with recipes."); // inform if something went wrong and then return false
+        return false;
+    }
+
+    // load data from file
+    auto recipesData = loadFile.readAll();
+    loadFile.close();
+
+    // save data in QJsonObject object
+    m_recipesJson = QJsonDocument(QJsonDocument::fromJson(recipesData)).object();
+    return true;
 }

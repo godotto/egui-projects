@@ -5,15 +5,13 @@
 
 #include <QMainWindow>
 
-#include <QListWidget>
-#include <QPushButton>
-
-#include <QHBoxLayout>
-#include <QVBoxLayout>
-
-#include <QAction>
-#include <QMenu>
+#include <QListView>
 #include <QMenuBar>
+
+#include <QFile>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QStandardItemModel>
 
 class RecipePlanner : public QMainWindow
 {
@@ -21,7 +19,6 @@ class RecipePlanner : public QMainWindow
 
 private:
     QWidget *m_centralWidget;   // main widget
-    QListWidget *m_recipeList;  // main list with added recipes
     QMenuBar *m_menuBar;        // menu bar
 
     // buttons
@@ -35,14 +32,28 @@ private:
 
     // actions and menu
     QAction *m_createMenuAction;
+    QAction *m_openFile;
     QAction *m_exitAction;
     QMenu *m_fileMenu;
+
+    // model for recipes and list of recipes
+    QStandardItemModel *m_recipesModel;
+    QListView *m_recipesListView;
+
+    // json file
+    QJsonObject m_recipesJson;
 
     // methods for constructor
     void createButtons();
     void createLayouts();
     void createActions();
     void createMenu();
+    void createModel();
+    void createList();
+
+    // json handling
+    bool readRecipesFromJson(QString fileName = "recipes.json");
+    bool saveRecipesToJson();
 
 public:
     RecipePlanner(QWidget *parent = nullptr);
@@ -53,6 +64,7 @@ private slots:
     void slotEditRecipe();          // open edit selected recipe
     void slotDeleteRecipe();        // open delete selected recipes
     void slotCreateMenu();          // open create menu window
+    void slotLoadFile();            // open json file with recipes
 
 };
 #endif // RECIPEPLANNER_H
