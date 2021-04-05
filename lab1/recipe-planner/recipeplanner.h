@@ -66,6 +66,7 @@ private slots:
     void slotDeleteRecipe();        // open delete selected recipes
     void slotCreateMenu();          // open create menu window
     void slotLoadFile();            // open json file with recipes
+    void slotUpdateButtons();       // disable or enable buttons according to the current state of selection
 
 };
 #endif // RECIPEPLANNER_H

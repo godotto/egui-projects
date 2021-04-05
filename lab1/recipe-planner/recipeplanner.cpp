@@ -26,6 +26,9 @@ RecipePlanner::RecipePlanner(QWidget *parent)
 
     // set QWidget with content as central widget
     m_centralWidget->setLayout(m_mainLayout);
+
+    // connect recipes list with slot
+    connect(m_recipesListView, &QListView::pressed, this, &RecipePlanner::slotUpdateButtons);
 }
 
 void RecipePlanner::slotCloseApplication()
@@ -35,28 +38,51 @@ void RecipePlanner::slotCloseApplication()
 
 void RecipePlanner::slotAddRecipe()
 {
-    auto *editRecipeWindow = new EditRecipe(EditRecipe::Add, this);
+    auto *editRecipeWindow = new EditRecipe(EditRecipe::Add, m_recipesModel, this);
     editRecipeWindow->exec();
 }
 
 void RecipePlanner::slotEditRecipe()
 {
-
 }
 
 void RecipePlanner::slotDeleteRecipe()
 {
-
 }
 
 void RecipePlanner::slotCreateMenu()
 {
-
 }
 
 void RecipePlanner::slotLoadFile()
 {
+}
 
+void RecipePlanner::slotUpdateButtons()
+{
+    // get number of selected items in the list
+    auto selectedItems = m_recipesListView->selectionModel()->selectedIndexes().count();
+
+    switch (selectedItems)
+    {
+    case 0: // when nothing is selected allow only adding a new recipe
+        m_addButton->setDisabled(false);
+        m_editButton->setDisabled(true);
+        m_deleteButton->setDisabled(true);
+        break;
+
+    case 1: // when one recipe is selected allow to edit or delete it
+        m_addButton->setDisabled(true);
+        m_editButton->setDisabled(false);
+        m_deleteButton->setDisabled(false);
+        break;
+
+    default: // when multiple recipes are selected allow only for deleting
+        m_addButton->setDisabled(true);
+        m_editButton->setDisabled(true);
+        m_deleteButton->setDisabled(false);
+        break;
+    }
 }
 
 void RecipePlanner::createButtons()
@@ -134,9 +160,9 @@ void RecipePlanner::createModel()
     m_recipesModel = new QStandardItemModel(this);
 
     // create root item as the model is a tree
-    auto *modelRoot = m_recipesModel->invisibleRootItem();
+    auto modelRoot = m_recipesModel->invisibleRootItem();
 
-    int currentRow = 0; // current row in the tree
+    auto currentRow = 0; // current row in the tree
 
     for (auto &&recipeName : m_recipesJson.keys())
     {
@@ -149,24 +175,27 @@ void RecipePlanner::createModel()
 
         // add description of recipe to the item with the name
         recipeItem->appendRow(new QStandardItem("recipe"));
-        auto recipeDescription = modelRoot->child(currentRow)->child(0);
+        auto recipeDescription = recipeItem->child(0);
         auto recipeDescriptionArray = recipeJsonObject["recipe"].toArray();
 
         for (auto &&line : recipeDescriptionArray)
             recipeDescription->appendRow(new QStandardItem(line.toString()));
 
-        int currentRowIngredient = 1; // current index of ingredient
-
         // add ingredients to the item with the name
+        recipeItem->appendRow(new QStandardItem("ingredients"));
+        auto recipeIngredients = recipeItem->child(1);
+
         for (auto &&ingredient : recipeJsonObject.keys())
         {
             if (ingredient != "recipe") // if it is description then ignore it
             {
-                recipeItem->appendRow(new QStandardItem(ingredient));
-                recipeItem->child(currentRowIngredient)->appendRow(new QStandardItem(recipeJsonObject[ingredient].toString()));
+                // create a temporary list with row of ingredient's name, number and unit
+                auto rowList = QList<QStandardItem*>();
+                rowList.append(new QStandardItem(ingredient));
+                rowList.append(new QStandardItem(recipeJsonObject[ingredient].toString()));
 
-                // go to the next ingredient
-                currentRowIngredient++;
+                // add content from list to the model
+                recipeIngredients->appendRow(rowList);
             }
         }
 
@@ -204,6 +233,6 @@ bool RecipePlanner::readRecipesFromJson(QString fileName)
     loadFile.close();
 
     // save data in QJsonObject object
-    m_recipesJson = QJsonDocument(QJsonDocument::fromJson(recipesData)).object();
+    m_recipesJson = QJsonDocument::fromJson(recipesData).object();
     return true;
 }
