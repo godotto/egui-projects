@@ -15,7 +15,8 @@ EditRecipe::EditRecipe(EditMode mode, QStandardItemModel *recipesModel, QWidget 
     m_recipeIndex = recipeIndex;
 
     // call helper methods to initialize all objects
-    createTable(m_recipeIndex);
+    setRecipeIndex(m_recipeIndex);
+    createTable();
     createLabels();
     createLineAndTextEdits();
     createPushButtons(mode);
@@ -276,7 +277,7 @@ void EditRecipe::createSpinbox()
     m_ingredientQuantitySpinbox->setStepType(QDoubleSpinBox::AdaptiveDecimalStepType);
 }
 
-void EditRecipe::createTable(QModelIndex *&recipeIndex)
+void EditRecipe::setRecipeIndex(QModelIndex *&recipeIndex)
 {
     // pointer to the root of model
     auto modelRoot = m_recipesModel->invisibleRootItem();
@@ -294,7 +295,10 @@ void EditRecipe::createTable(QModelIndex *&recipeIndex)
         // get new item's index
         *recipeIndex = newRecipe->index();
     }
+}
 
+void EditRecipe::createTable()
+{
     // table view definition
     m_ingredientsTableView = new QTableView(this);
 
@@ -302,7 +306,7 @@ void EditRecipe::createTable(QModelIndex *&recipeIndex)
     m_ingredientsTableView->setModel(m_recipesModel);
 
     // set root of the view to currently processed recipe's ingredients
-    m_ingredientsTableView->setRootIndex(m_recipesModel->index(ingredientsChildItem, 0, *recipeIndex));
+    m_ingredientsTableView->setRootIndex(m_recipesModel->index(ingredientsChildItem, 0, *m_recipeIndex));
 
     // hide headers
     m_ingredientsTableView->horizontalHeader()->setVisible(false);

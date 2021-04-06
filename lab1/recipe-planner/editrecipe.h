@@ -83,7 +83,8 @@ private:
     void createPushButtons(EditMode);
     void createLayouts();
     void createSpinbox();
-    void createTable(QModelIndex*&);
+    void setRecipeIndex(QModelIndex*&);
+    void createTable();
 
     // auxiliary methods
     QString getUnit(QString);
