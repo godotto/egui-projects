@@ -68,23 +68,44 @@ void EditRecipe::slotEditIngredient()
     // make sure that input data is not empty and that ingredient is unique
     if (name != "" && quantityAndUnit != "" && doesIngredientExist(name, m_ingredientUnitLineEdit->text()))
     {
-         // get selected index
-        auto selectedIngredientIndex = m_ingredientsTableView->selectionModel()->selectedIndexes();
+        // get selected indices
+        auto selectedIngredientIndices = m_ingredientsTableView->selectionModel()->selectedIndexes();
 
         // update name and/or quantity with unit
-        m_recipesModel->itemFromIndex(selectedIngredientIndex[0])->setText(name);
-        m_recipesModel->itemFromIndex(selectedIngredientIndex[1])->setText(quantityAndUnit);
+        m_recipesModel->itemFromIndex(selectedIngredientIndices[0])->setText(name);
+        m_recipesModel->itemFromIndex(selectedIngredientIndices[1])->setText(quantityAndUnit);
     }
 
     // clear line edits and spin box
     m_ingredientNameLineEdit->clear();
     m_ingredientQuantitySpinbox->setValue(0);
     m_ingredientUnitLineEdit->clear();
+
+    // clear selection
+    m_ingredientsTableView->selectionModel()->clearSelection();
 }
 
 void EditRecipe::slotDeleteIngredients()
 {
+    // get selected indices
+    auto selectedIngredientIndices = m_ingredientsTableView->selectionModel()->selectedIndexes();
 
+    // get index with ingredients
+    auto ingredientsIndex = m_recipesModel->itemFromIndex(*m_recipeIndex)->child(ingredientsChildItem)->index();
+
+    // remove row of each selected pair of indices
+    while (!selectedIngredientIndices.isEmpty())
+    {
+        // remove row containg selected index
+        m_recipesModel->removeRow(selectedIngredientIndices.last().row(), ingredientsIndex);
+
+        // as indices are in pairs remove both of them from the list
+        selectedIngredientIndices.removeLast();
+        selectedIngredientIndices.removeLast();
+    }
+
+    // clear selection
+    m_ingredientsTableView->selectionModel()->clearSelection();
 }
 
 void EditRecipe::slotUpdateButtons()
@@ -273,6 +294,7 @@ void EditRecipe::createTable(QModelIndex *&recipeIndex)
 
     // connect table to the slot responsible for disabling buttons
     connect(m_ingredientsTableView, &QTableView::pressed, this, &EditRecipe::slotUpdateButtons);
+    connect(m_ingredientsTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &EditRecipe::slotUpdateButtons);
 }
 
 QString EditRecipe::getUnit(QString quantityWithUnit)
