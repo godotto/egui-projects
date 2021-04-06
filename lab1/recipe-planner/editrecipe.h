@@ -14,6 +14,10 @@
 
 #include <QGroupBox>
 
+#include <QStandardItemModel>
+#include <QTableView>
+#include <QHeaderView>
+
 class EditRecipe : public QDialog
 {
     Q_OBJECT
@@ -42,7 +46,8 @@ private:
     QTextEdit *m_descriptionTextEdit;
 
     // pushbuttons
-    QPushButton *m_addUpdateIngredientButton;
+    QPushButton *m_addIngredientButton;
+    QPushButton *m_editIngredientButton;
     QPushButton *m_deleteIngredientButton;
     QPushButton *m_confirmUpdateRecipeButton;
     QPushButton *m_cancelButton;
@@ -60,18 +65,25 @@ private:
     QHBoxLayout *m_ingredientButtonLayout;
     QHBoxLayout *m_buttonLayout;
 
+    // table of ingredients and pointer to model
+    QTableView *m_ingredientsTableView;
+    QStandardItemModel *m_recipesModel;
+    QModelIndex *m_recipeIndex;
+
     // group box for ingredients
     QGroupBox *m_ingredientsBox;
 
     // methods for constructor
     void createLabels();
-    void createLineAndTextEdits(QString, QString, QString, QStringList*);
+    void createLineAndTextEdits();
     void createPushButtons(EditMode);
     void createLayouts();
     void createSpinbox();
+    void createTable(QModelIndex*&);
 
 public:
-    EditRecipe(EditMode, QWidget *parent = nullptr);
+    EditRecipe(EditMode, QStandardItemModel*, QWidget *parent = nullptr, QModelIndex *recipeIndex = nullptr);
+    ~EditRecipe();
 };
 
 #endif // EDITRECIPE_H

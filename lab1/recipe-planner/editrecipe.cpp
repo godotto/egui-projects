@@ -1,6 +1,6 @@
 #include "editrecipe.h"
 
-EditRecipe::EditRecipe(EditMode mode, QWidget *parent)
+EditRecipe::EditRecipe(EditMode mode, QStandardItemModel *recipesModel, QWidget *parent, QModelIndex *recipeIndex)
     : QDialog(parent)
 {
     // set window size
@@ -10,15 +10,25 @@ EditRecipe::EditRecipe(EditMode mode, QWidget *parent)
     // set window title
     setWindowTitle(mode == Add ? "New recipe" : "Edit recipe");
 
+    // set pointers to model and recipe's item index
+    m_recipesModel = recipesModel;
+    m_recipeIndex = recipeIndex;
+
     // call helper methods to initialize all objects
+    createTable(m_recipeIndex);
     createLabels();
-    createLineAndTextEdits("", "", "", nullptr);
+    createLineAndTextEdits();
     createPushButtons(mode);
     createSpinbox();
     createLayouts();
 
     // set main layout
     setLayout(m_mainLayout);
+}
+
+EditRecipe::~EditRecipe()
+{
+    delete m_recipeIndex;
 }
 
 void EditRecipe::createLabels()
@@ -31,12 +41,12 @@ void EditRecipe::createLabels()
     m_ingredientUnitLabel = new QLabel("Unit:", this);
 }
 
-void EditRecipe::createLineAndTextEdits(QString previousName, QString previousIngredientName, QString previousUnit, QStringList* previousDescription)
+void EditRecipe::createLineAndTextEdits()
 {
     // line edits definition
-    m_nameLineEdit = new QLineEdit(previousName, this);
-    m_ingredientNameLineEdit = new QLineEdit(previousIngredientName, this);
-    m_ingredientUnitLineEdit = new QLineEdit(previousUnit, this);
+    m_nameLineEdit = new QLineEdit(m_recipesModel->itemFromIndex(*m_recipeIndex)->text(), this);
+    m_ingredientNameLineEdit = new QLineEdit(this);
+    m_ingredientUnitLineEdit = new QLineEdit(this);
 
     // text edit definition
 //    m_descriptionTextEdit = new QTextEdit(previousDescription.join(' '), this);
@@ -48,12 +58,14 @@ void EditRecipe::createPushButtons(EditMode mode)
     // buttons definition
     m_confirmUpdateRecipeButton = new QPushButton(mode == Add ? "&Ok" : "&Update", this); // determine whether it is new recipe or existing one
     m_cancelButton = new QPushButton("&Cancel", this);
-    m_addUpdateIngredientButton = new QPushButton("&Add", this);
+    m_addIngredientButton = new QPushButton("&Add", this);
+    m_editIngredientButton = new QPushButton("&Edit", this);
     m_deleteIngredientButton = new QPushButton("&Delete", this);
 
-    // disable deleting button as default option
+    // disable delete and update button as default option
     // it will be enabled when ingredient is being selected from the list
     m_deleteIngredientButton->setDisabled(true);
+    m_editIngredientButton->setDisabled(true);
 }
 
 void EditRecipe::createLayouts()
@@ -90,13 +102,15 @@ void EditRecipe::createLayouts()
     m_ingredientQuantityLayout->addWidget(m_ingredientUnitLineEdit);
 
     // ingredient buttons
-    m_ingredientButtonLayout->addWidget(m_addUpdateIngredientButton);
+    m_ingredientButtonLayout->addWidget(m_addIngredientButton);
+    m_ingredientButtonLayout->addWidget(m_editIngredientButton);
     m_ingredientButtonLayout->addWidget(m_deleteIngredientButton);
 
-    m_ingredientButtonLayout->setAlignment(Qt::AlignRight);
+    m_ingredientButtonLayout->setAlignment(Qt::AlignLeft);
 
     // ingredients group box
     m_ingredientLayout->addLayout(m_ingredientNameLayout);
+    m_ingredientLayout->addWidget(m_ingredientsTableView);
     m_ingredientLayout->addLayout(m_ingredientQuantityLayout);
     m_ingredientLayout->addLayout(m_ingredientButtonLayout);
 
@@ -124,4 +138,37 @@ void EditRecipe::createSpinbox()
     // set value range and adaptive step
     m_ingredientQuantitySpinbox->setRange(0, 999);
     m_ingredientQuantitySpinbox->setStepType(QDoubleSpinBox::AdaptiveDecimalStepType);
+}
+
+void EditRecipe::createTable(QModelIndex *&recipeIndex)
+{
+    // pointer to the root of model
+    auto modelRoot = m_recipesModel->invisibleRootItem();
+
+    if (recipeIndex == nullptr) // if index is empty create new recipe
+    {
+        recipeIndex = new QModelIndex();
+        modelRoot->appendRow(new QStandardItem("New recipe"));
+        auto newRecipe = modelRoot->child(modelRoot->rowCount() - 1); // index of the added recipe
+
+        // create description and ingredients items
+        newRecipe->appendRow(new QStandardItem("recipe"));
+        newRecipe->appendRow(new QStandardItem("ingredients"));
+
+        // get new item's index
+        *recipeIndex = newRecipe->index();
+    }
+
+    // table view definition
+    m_ingredientsTableView = new QTableView(this);
+
+    // set model with recipes as model for the list
+    m_ingredientsTableView->setModel(m_recipesModel);
+
+    // set root of the view to currently processed recipe
+    m_ingredientsTableView->setRootIndex(m_recipesModel->index(1, 0, *recipeIndex));
+
+    // hide headers
+    m_ingredientsTableView->horizontalHeader()->setVisible(false);
+    m_ingredientsTableView->verticalHeader()->setVisible(false);
 }
