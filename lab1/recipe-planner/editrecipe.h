@@ -98,7 +98,8 @@ private slots:
     void slotAddIngredient();
     void slotEditIngredient();
     void slotDeleteIngredients();
-    void slotUpdateButtons();
+    void slotUpdateButtonsAndFields();
+    void slotFillEditFields(const QModelIndex&);
 };
 
 #endif // EDITRECIPE_H

@@ -38,7 +38,7 @@ void EditRecipe::slotAddIngredient()
     auto quantityAndUnit = QString(m_ingredientQuantitySpinbox->text() + " " + m_ingredientUnitLineEdit->text());
 
     // make sure that input data is not empty and that ingredient is unique
-    if (name != "" && quantityAndUnit != "" && doesIngredientExist(name, m_ingredientUnitLineEdit->text()))
+    if (name != "" && getUnit(quantityAndUnit) != "" && getQuantity(quantityAndUnit) != "" && doesIngredientExist(name, m_ingredientUnitLineEdit->text()))
     {
         // get item with ingredients
         auto ingredients = m_recipesModel->itemFromIndex(*m_recipeIndex)->child(ingredientsChildItem);
@@ -51,12 +51,12 @@ void EditRecipe::slotAddIngredient()
 
         // add row to the model
         ingredients->appendRow(rowList);
-    }
 
-    // clear line edits and spin box
-    m_ingredientNameLineEdit->clear();
-    m_ingredientQuantitySpinbox->setValue(0);
-    m_ingredientUnitLineEdit->clear();
+        // clear line edits and spin box
+        m_ingredientNameLineEdit->clear();
+        m_ingredientQuantitySpinbox->setValue(0);
+        m_ingredientUnitLineEdit->clear();
+    }
 }
 
 void EditRecipe::slotEditIngredient()
@@ -66,7 +66,7 @@ void EditRecipe::slotEditIngredient()
     auto quantityAndUnit = QString(m_ingredientQuantitySpinbox->text() + " " + m_ingredientUnitLineEdit->text());
 
     // make sure that input data is not empty and that ingredient is unique
-    if (name != "" && quantityAndUnit != "" && doesIngredientExist(name, m_ingredientUnitLineEdit->text()))
+    if (name != "" && getUnit(quantityAndUnit) != "" && getQuantity(quantityAndUnit) != "" && doesIngredientExist(name, m_ingredientUnitLineEdit->text()))
     {
         // get selected indices
         auto selectedIngredientIndices = m_ingredientsTableView->selectionModel()->selectedIndexes();
@@ -74,15 +74,15 @@ void EditRecipe::slotEditIngredient()
         // update name and/or quantity with unit
         m_recipesModel->itemFromIndex(selectedIngredientIndices[0])->setText(name);
         m_recipesModel->itemFromIndex(selectedIngredientIndices[1])->setText(quantityAndUnit);
+
+        // clear line edits and spin box
+        m_ingredientNameLineEdit->clear();
+        m_ingredientQuantitySpinbox->setValue(0);
+        m_ingredientUnitLineEdit->clear();
+
+        // clear selection
+        m_ingredientsTableView->selectionModel()->clearSelection();
     }
-
-    // clear line edits and spin box
-    m_ingredientNameLineEdit->clear();
-    m_ingredientQuantitySpinbox->setValue(0);
-    m_ingredientUnitLineEdit->clear();
-
-    // clear selection
-    m_ingredientsTableView->selectionModel()->clearSelection();
 }
 
 void EditRecipe::slotDeleteIngredients()
@@ -108,7 +108,7 @@ void EditRecipe::slotDeleteIngredients()
     m_ingredientsTableView->selectionModel()->clearSelection();
 }
 
-void EditRecipe::slotUpdateButtons()
+void EditRecipe::slotUpdateButtonsAndFields()
 {
     // get number of selected items in the list
     auto selectedItems = m_ingredientsTableView->selectionModel()->selectedIndexes().count();
@@ -119,6 +119,11 @@ void EditRecipe::slotUpdateButtons()
         m_addIngredientButton->setDisabled(false);
         m_editIngredientButton->setDisabled(true);
         m_deleteIngredientsButton->setDisabled(true);
+
+        m_ingredientNameLineEdit->clear();
+        m_ingredientQuantitySpinbox->setValue(0);
+        m_ingredientUnitLineEdit->clear();
+
         break;
 
     case 2: // when one ingredient is selected allow to edit or delete it (it has to be case as one row counts as two indices)
@@ -131,8 +136,30 @@ void EditRecipe::slotUpdateButtons()
         m_addIngredientButton->setDisabled(true);
         m_editIngredientButton->setDisabled(true);
         m_deleteIngredientsButton->setDisabled(false);
+
+        m_ingredientNameLineEdit->clear();
+        m_ingredientQuantitySpinbox->setValue(0);
+        m_ingredientUnitLineEdit->clear();
+
         break;
     }
+}
+
+void EditRecipe::slotFillEditFields(const QModelIndex &clickedIndex)
+{
+    // get clicked row and ingredient index
+    auto clickedRow = clickedIndex.row();
+    auto ingredientsItem = m_recipesModel->itemFromIndex(*m_recipeIndex)->child(ingredientsChildItem);
+
+    // update ingredient's name line edit
+    m_ingredientNameLineEdit->setText(ingredientsItem->child(clickedRow, 0)->text());
+
+    // get ingredient's quantity and unit
+    auto quantityWithUnit = ingredientsItem->child(clickedRow, 1)->text();
+
+    // update ingredient's unit line edit and quantity spin box
+    m_ingredientQuantitySpinbox->setValue(getQuantity(quantityWithUnit).toDouble());
+    m_ingredientUnitLineEdit->setText(getUnit(quantityWithUnit));
 }
 
 void EditRecipe::createLabels()
@@ -292,9 +319,12 @@ void EditRecipe::createTable(QModelIndex *&recipeIndex)
     m_ingredientsTableView->setEditTriggers(QAbstractItemView::EditTrigger::NoEditTriggers);
     m_ingredientsTableView->setSelectionMode(QAbstractItemView::MultiSelection);
 
+    // connect table to slot responsible for filling edit fields
+    connect(m_ingredientsTableView, &QTableView::clicked, this, &EditRecipe::slotFillEditFields);
+
     // connect table to the slot responsible for disabling buttons
-    connect(m_ingredientsTableView, &QTableView::pressed, this, &EditRecipe::slotUpdateButtons);
-    connect(m_ingredientsTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &EditRecipe::slotUpdateButtons);
+    connect(m_ingredientsTableView, &QTableView::clicked, this, &EditRecipe::slotUpdateButtonsAndFields);
+    connect(m_ingredientsTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &EditRecipe::slotUpdateButtonsAndFields);
 }
 
 QString EditRecipe::getUnit(QString quantityWithUnit)
