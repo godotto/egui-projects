@@ -73,6 +73,10 @@ private:
     // group box for ingredients
     QGroupBox *m_ingredientsBox;
 
+    // constant values to get rid of magic numbers
+    const int descriptionChildItem = 0;
+    const int ingredientsChildItem = 1;
+
     // methods for constructor
     void createLabels();
     void createLineAndTextEdits();

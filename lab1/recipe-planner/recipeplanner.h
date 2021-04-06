@@ -56,6 +56,10 @@ private:
     bool readRecipesFromJson(QString fileName = "recipes.json");
     bool saveRecipesToJson();
 
+    // constant values to get rid of magic numbers
+    const int descriptionChildItem = 0;
+    const int ingredientsChildItem = 1;
+
 public:
     RecipePlanner(QWidget *parent = nullptr);
 

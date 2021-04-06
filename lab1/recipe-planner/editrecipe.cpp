@@ -109,8 +109,8 @@ void EditRecipe::createLayouts()
     m_ingredientButtonLayout->setAlignment(Qt::AlignLeft);
 
     // ingredients group box
-    m_ingredientLayout->addLayout(m_ingredientNameLayout);
     m_ingredientLayout->addWidget(m_ingredientsTableView);
+    m_ingredientLayout->addLayout(m_ingredientNameLayout);
     m_ingredientLayout->addLayout(m_ingredientQuantityLayout);
     m_ingredientLayout->addLayout(m_ingredientButtonLayout);
 
@@ -165,8 +165,8 @@ void EditRecipe::createTable(QModelIndex *&recipeIndex)
     // set model with recipes as model for the list
     m_ingredientsTableView->setModel(m_recipesModel);
 
-    // set root of the view to currently processed recipe
-    m_ingredientsTableView->setRootIndex(m_recipesModel->index(1, 0, *recipeIndex));
+    // set root of the view to currently processed recipe's ingredients
+    m_ingredientsTableView->setRootIndex(m_recipesModel->index(ingredientsChildItem, 0, *recipeIndex));
 
     // hide headers
     m_ingredientsTableView->horizontalHeader()->setVisible(false);

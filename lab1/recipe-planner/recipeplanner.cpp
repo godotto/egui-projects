@@ -175,7 +175,7 @@ void RecipePlanner::createModel()
 
         // add description of recipe to the item with the name
         recipeItem->appendRow(new QStandardItem("recipe"));
-        auto recipeDescription = recipeItem->child(0);
+        auto recipeDescription = recipeItem->child(descriptionChildItem);
         auto recipeDescriptionArray = recipeJsonObject["recipe"].toArray();
 
         for (auto &&line : recipeDescriptionArray)
@@ -183,7 +183,7 @@ void RecipePlanner::createModel()
 
         // add ingredients to the item with the name
         recipeItem->appendRow(new QStandardItem("ingredients"));
-        auto recipeIngredients = recipeItem->child(1);
+        auto recipeIngredients = recipeItem->child(ingredientsChildItem);
 
         for (auto &&ingredient : recipeJsonObject.keys())
         {
