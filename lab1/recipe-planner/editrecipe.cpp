@@ -31,6 +31,89 @@ EditRecipe::~EditRecipe()
     delete m_recipeIndex;
 }
 
+void EditRecipe::slotAddIngredient()
+{
+    // get new ingredient's name and quantity with unit from line edit and spin box
+    auto name = m_ingredientNameLineEdit->text();
+    auto quantityAndUnit = QString(m_ingredientQuantitySpinbox->text() + " " + m_ingredientUnitLineEdit->text());
+
+    // make sure that input data is not empty and that ingredient is unique
+    if (name != "" && quantityAndUnit != "" && doesIngredientExist(name, m_ingredientUnitLineEdit->text()))
+    {
+        // get item with ingredients
+        auto ingredients = m_recipesModel->itemFromIndex(*m_recipeIndex)->child(ingredientsChildItem);
+
+        // create a temporary list with row of ingredient's name, number and unit
+        auto rowList = QList<QStandardItem*>();
+        rowList.append(new QStandardItem(name));
+        rowList.append(new QStandardItem(quantityAndUnit));
+        rowList[1]->setTextAlignment(Qt::AlignCenter);
+
+        // add row to the model
+        ingredients->appendRow(rowList);
+    }
+
+    // clear line edits and spin box
+    m_ingredientNameLineEdit->clear();
+    m_ingredientQuantitySpinbox->setValue(0);
+    m_ingredientUnitLineEdit->clear();
+}
+
+void EditRecipe::slotEditIngredient()
+{
+    // get new ingredient's name and quantity with unit from line edit and spin box
+    auto name = m_ingredientNameLineEdit->text();
+    auto quantityAndUnit = QString(m_ingredientQuantitySpinbox->text() + " " + m_ingredientUnitLineEdit->text());
+
+    // make sure that input data is not empty and that ingredient is unique
+    if (name != "" && quantityAndUnit != "" && doesIngredientExist(name, m_ingredientUnitLineEdit->text()))
+    {
+         // get selected index
+        auto selectedIngredientIndex = m_ingredientsTableView->selectionModel()->selectedIndexes();
+
+        // update name and/or quantity with unit
+        m_recipesModel->itemFromIndex(selectedIngredientIndex[0])->setText(name);
+        m_recipesModel->itemFromIndex(selectedIngredientIndex[1])->setText(quantityAndUnit);
+    }
+
+    // clear line edits and spin box
+    m_ingredientNameLineEdit->clear();
+    m_ingredientQuantitySpinbox->setValue(0);
+    m_ingredientUnitLineEdit->clear();
+}
+
+void EditRecipe::slotDeleteIngredients()
+{
+
+}
+
+void EditRecipe::slotUpdateButtons()
+{
+    // get number of selected items in the list
+    auto selectedItems = m_ingredientsTableView->selectionModel()->selectedIndexes().count();
+
+    switch (selectedItems)
+    {
+    case 0: // when nothing is selected allow only adding a new ingredient
+        m_addIngredientButton->setDisabled(false);
+        m_editIngredientButton->setDisabled(true);
+        m_deleteIngredientsButton->setDisabled(true);
+        break;
+
+    case 2: // when one ingredient is selected allow to edit or delete it (it has to be case as one row counts as two indices)
+        m_addIngredientButton->setDisabled(true);
+        m_editIngredientButton->setDisabled(false);
+        m_deleteIngredientsButton->setDisabled(false);
+        break;
+
+    default: // when ingredients are selected allow only for deleting
+        m_addIngredientButton->setDisabled(true);
+        m_editIngredientButton->setDisabled(true);
+        m_deleteIngredientsButton->setDisabled(false);
+        break;
+    }
+}
+
 void EditRecipe::createLabels()
 {
     // labels definition
@@ -60,12 +143,17 @@ void EditRecipe::createPushButtons(EditMode mode)
     m_cancelButton = new QPushButton("&Cancel", this);
     m_addIngredientButton = new QPushButton("&Add", this);
     m_editIngredientButton = new QPushButton("&Edit", this);
-    m_deleteIngredientButton = new QPushButton("&Delete", this);
+    m_deleteIngredientsButton = new QPushButton("&Delete", this);
 
     // disable delete and update button as default option
     // it will be enabled when ingredient is being selected from the list
-    m_deleteIngredientButton->setDisabled(true);
+    m_deleteIngredientsButton->setDisabled(true);
     m_editIngredientButton->setDisabled(true);
+
+    // connect buttons
+    connect(m_addIngredientButton, &QPushButton::clicked, this, &EditRecipe::slotAddIngredient);
+    connect(m_editIngredientButton, &QPushButton::clicked, this, &EditRecipe::slotEditIngredient);
+    connect(m_deleteIngredientsButton, &QPushButton::clicked, this, &EditRecipe::slotDeleteIngredients);
 }
 
 void EditRecipe::createLayouts()
@@ -104,7 +192,7 @@ void EditRecipe::createLayouts()
     // ingredient buttons
     m_ingredientButtonLayout->addWidget(m_addIngredientButton);
     m_ingredientButtonLayout->addWidget(m_editIngredientButton);
-    m_ingredientButtonLayout->addWidget(m_deleteIngredientButton);
+    m_ingredientButtonLayout->addWidget(m_deleteIngredientsButton);
 
     m_ingredientButtonLayout->setAlignment(Qt::AlignLeft);
 
@@ -171,4 +259,54 @@ void EditRecipe::createTable(QModelIndex *&recipeIndex)
     // hide headers
     m_ingredientsTableView->horizontalHeader()->setVisible(false);
     m_ingredientsTableView->verticalHeader()->setVisible(false);
+
+    // hide grid
+    m_ingredientsTableView->setShowGrid(false);
+
+    // stretch the last column to fill whole table with content
+    m_ingredientsTableView->horizontalHeader()->setStretchLastSection(true);
+
+    // set selection rules
+    m_ingredientsTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    m_ingredientsTableView->setEditTriggers(QAbstractItemView::EditTrigger::NoEditTriggers);
+    m_ingredientsTableView->setSelectionMode(QAbstractItemView::MultiSelection);
+
+    // connect table to the slot responsible for disabling buttons
+    connect(m_ingredientsTableView, &QTableView::pressed, this, &EditRecipe::slotUpdateButtons);
+}
+
+QString EditRecipe::getUnit(QString quantityWithUnit)
+{
+    // get substring starting with the first space character
+    auto unit = quantityWithUnit.mid(quantityWithUnit.indexOf(' '));
+
+    // remove leading space character
+    unit = unit.remove(0, 1);
+
+    return unit;
+}
+
+QString EditRecipe::getQuantity(QString quantityWithUnit)
+{
+    // get first characters before space
+    return quantityWithUnit.left(quantityWithUnit.indexOf(' '));
+}
+
+bool EditRecipe::doesIngredientExist(QString name, QString unit)
+{
+    // get list of ingredients with the same name
+    auto ingredientItems = m_recipesModel->findItems(name, Qt::MatchRecursive);
+
+    for (auto &&ingredient : ingredientItems)
+    {
+        // get string of quantity with unit
+        auto quantityWithUnit = m_recipesModel->itemFromIndex(ingredient->index().siblingAtColumn(1))->text();
+
+        // if there is already an ingredient with the same name and unit return false
+        if (ingredient->text() == name && getUnit(quantityWithUnit) == unit)
+            return false;
+    }
+
+    // otherwise return true
+    return true;
 }

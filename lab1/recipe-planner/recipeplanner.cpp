@@ -26,9 +26,6 @@ RecipePlanner::RecipePlanner(QWidget *parent)
 
     // set QWidget with content as central widget
     m_centralWidget->setLayout(m_mainLayout);
-
-    // connect recipes list with slot
-    connect(m_recipesListView, &QListView::pressed, this, &RecipePlanner::slotUpdateButtons);
 }
 
 void RecipePlanner::slotCloseApplication()
@@ -215,6 +212,9 @@ void RecipePlanner::createList()
     // set lists properties
     m_recipesListView->setSelectionMode(QAbstractItemView::MultiSelection);
     m_recipesListView->setEditTriggers(QAbstractItemView::EditTrigger::NoEditTriggers);
+
+    // connect list to the slot responsible for disabling buttons
+    connect(m_recipesListView, &QListView::pressed, this, &RecipePlanner::slotUpdateButtons);
 }
 
 bool RecipePlanner::readRecipesFromJson(QString fileName)

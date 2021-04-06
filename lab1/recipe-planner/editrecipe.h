@@ -48,7 +48,7 @@ private:
     // pushbuttons
     QPushButton *m_addIngredientButton;
     QPushButton *m_editIngredientButton;
-    QPushButton *m_deleteIngredientButton;
+    QPushButton *m_deleteIngredientsButton;
     QPushButton *m_confirmUpdateRecipeButton;
     QPushButton *m_cancelButton;
 
@@ -85,9 +85,20 @@ private:
     void createSpinbox();
     void createTable(QModelIndex*&);
 
+    // auxiliary methods
+    QString getUnit(QString);
+    QString getQuantity(QString);
+    bool doesIngredientExist(QString, QString);
+
 public:
     EditRecipe(EditMode, QStandardItemModel*, QWidget *parent = nullptr, QModelIndex *recipeIndex = nullptr);
     ~EditRecipe();
+
+private slots:
+    void slotAddIngredient();
+    void slotEditIngredient();
+    void slotDeleteIngredients();
+    void slotUpdateButtons();
 };
 
 #endif // EDITRECIPE_H
