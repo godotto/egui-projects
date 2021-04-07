@@ -60,7 +60,7 @@ private:
 
     // json handling
     bool readRecipesFromJson(QString fileName = "recipes.json");
-    bool saveRecipesToJson();
+    bool saveRecipesToJson(QString fileName = "recipes.json");
 
     // constant values to get rid of magic numbers
     const int descriptionChildItem = 0;
@@ -77,6 +77,7 @@ private slots:
     void slotCreateMenu();          // open create menu window
     void slotLoadFile();            // open json file with recipes
     void slotUpdateButtons();       // disable or enable buttons according to the current state of selection
+    void slotUpdateJsonObject(QStandardItem*);
 
 };
 #endif // RECIPEPLANNER_H

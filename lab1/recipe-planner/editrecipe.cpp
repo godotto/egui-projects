@@ -214,7 +214,8 @@ void EditRecipe::slotConfirmRecipe()
     if (m_mode == Edit)
         delete m_copyOfRecipeItem;
 
-    // close window
+    // emit singal with changed item and close window
+    emit modelChanged(m_recipesModel->itemFromIndex(*m_recipeIndex));
     accept();
 }
 

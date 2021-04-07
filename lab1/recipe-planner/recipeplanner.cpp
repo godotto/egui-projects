@@ -35,8 +35,13 @@ void RecipePlanner::slotCloseApplication()
 
 void RecipePlanner::slotAddRecipe()
 {
-    // open window with add mode and pass the model
+    // create window with add mode and pass the model
     m_editRecipeWindow = new EditRecipe(EditRecipe::Add, m_recipesModel, this);
+
+    // connect slot which updates JSON object
+    connect(m_editRecipeWindow, &EditRecipe::modelChanged, this, &RecipePlanner::slotUpdateJsonObject);
+
+    // open window
     m_editRecipeWindow->exec();
 }
 
@@ -50,6 +55,9 @@ void RecipePlanner::slotEditRecipe()
 
     // connect edit recipe window to the slot responsible for updating the buttons
     connect(m_editRecipeWindow, &EditRecipe::rejected, this, &RecipePlanner::slotUpdateButtons);
+
+    // connect slot which updates JSON object
+    connect(m_editRecipeWindow, &EditRecipe::modelChanged, this, &RecipePlanner::slotUpdateJsonObject);
 
     // open window
     m_editRecipeWindow->exec();
@@ -92,6 +100,36 @@ void RecipePlanner::slotUpdateButtons()
         m_deleteButton->setDisabled(false);
         break;
     }
+}
+
+void RecipePlanner::slotUpdateJsonObject(QStandardItem *updatedRecipeItem)
+{
+    // get description item
+    auto descriptionItem = updatedRecipeItem->child(descriptionChildItem);
+
+    // create JSON array with description
+    QJsonArray descriptionJson;
+    for (auto row = 0; row < descriptionItem->rowCount(); row++)
+        descriptionJson.append(descriptionItem->child(row)->text());
+
+    // create JSON object with recipe and add description
+    QJsonObject recipeJson;
+    recipeJson["recipe"] = descriptionJson;
+
+    // get ingredients item
+    auto ingredientsItem = updatedRecipeItem->child(ingredientsChildItem);
+
+    // add ingredients to recipe JSON
+    for (auto row = 0; row < ingredientsItem->rowCount(); row++)
+        recipeJson[ingredientsItem->child(row, 0)->text()] = ingredientsItem->child(row, 1)->text();
+
+    // get recipe name
+    auto recipeName = updatedRecipeItem->text();
+
+    // update main JSON object
+    m_recipesJson[recipeName] = recipeJson;
+
+    saveRecipesToJson();
 }
 
 void RecipePlanner::createButtons()
@@ -248,5 +286,24 @@ bool RecipePlanner::readRecipesFromJson(QString fileName)
 
     // save data in QJsonObject object
     m_recipesJson = QJsonDocument::fromJson(recipesData).object();
+    return true;
+}
+
+bool RecipePlanner::saveRecipesToJson(QString fileName)
+{
+    // open selected file or deafualt - recipes.json
+    QFile saveFile(fileName);
+
+    if (!saveFile.open(QIODevice::WriteOnly))
+    {
+        qFatal("Could not open file with recipes."); // inform if something went wrong and then return false
+        return false;
+    }
+
+    // create JSON document object
+    QJsonDocument saveDoc(m_recipesJson);
+    saveFile.write(saveDoc.toJson());
+    saveFile.close();
+
     return true;
 }

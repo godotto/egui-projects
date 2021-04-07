@@ -99,6 +99,9 @@ private:
 public:
     EditRecipe(EditMode, QStandardItemModel*, QWidget *parent = nullptr, QModelIndex *recipeIndex = nullptr);
 
+signals:
+    void modelChanged(QStandardItem*);
+
 private slots:
     void slotAddIngredient();
     void slotEditIngredient();
