@@ -196,6 +196,20 @@ void EditRecipe::slotConfirmRecipe()
     // update recipe name
     m_recipesModel->itemFromIndex(*m_recipeIndex)->setText(m_nameLineEdit->text());
 
+    // get description from text edit and split it
+    auto splittedDescription = m_descriptionTextEdit->toPlainText().split('\n');
+
+    // get item with description
+    auto descriptionItem = m_recipesModel->itemFromIndex(*m_recipeIndex)->child(descriptionChildItem);
+
+    // if recipe is in edit mode remove previous description from model
+    if (m_mode == Edit)
+        m_recipesModel->removeRows(0, descriptionItem->rowCount(), descriptionItem->index());
+
+    // update description
+    for (auto &&line : splittedDescription)
+        descriptionItem->appendRow(new QStandardItem(line));
+
     // free memory of copied recipe item
     if (m_mode == Edit)
         delete m_copyOfRecipeItem;
@@ -221,9 +235,22 @@ void EditRecipe::createLineAndTextEdits()
     m_ingredientNameLineEdit = new QLineEdit(this);
     m_ingredientUnitLineEdit = new QLineEdit(this);
 
+    // string for description
+    QString concatenatedDescription = "";
+
+    // get item with description
+    auto descriptionItem = m_recipesModel->itemFromIndex(*m_recipeIndex)->child(descriptionChildItem);
+
+    // create one description string out of each line
+    for (auto row = 0; row < descriptionItem->rowCount(); row++)
+        concatenatedDescription += descriptionItem->child(row)->text() + '\n';
+
+    // chop additional line break
+    concatenatedDescription.chop(1);
+
     // text edit definition
-//    m_descriptionTextEdit = new QTextEdit(previousDescription.join(' '), this);
     m_descriptionTextEdit = new QTextEdit(this);
+    m_descriptionTextEdit->setPlainText(concatenatedDescription);
 }
 
 void EditRecipe::createPushButtons()
