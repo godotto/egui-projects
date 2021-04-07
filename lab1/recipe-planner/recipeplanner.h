@@ -73,7 +73,7 @@ private slots:
     void slotCloseApplication();    // close window main window with application
     void slotAddRecipe();           // open add recipe window
     void slotEditRecipe();          // open edit selected recipe
-    void slotDeleteRecipe();        // open delete selected recipes
+    void slotDeleteRecipes();        // open delete selected recipes
     void slotCreateMenu();          // open create menu window
     void slotLoadFile();            // open json file with recipes
     void slotUpdateButtons();       // disable or enable buttons according to the current state of selection

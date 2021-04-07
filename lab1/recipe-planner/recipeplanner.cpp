@@ -63,8 +63,34 @@ void RecipePlanner::slotEditRecipe()
     m_editRecipeWindow->exec();
 }
 
-void RecipePlanner::slotDeleteRecipe()
+void RecipePlanner::slotDeleteRecipes()
 {
+    // get selected indices
+    auto selectedRecipes = new QList<QModelIndex>(m_recipesListView->selectionModel()->selectedRows());
+
+    // remove row of each selected pair of indices
+    while (!selectedRecipes->isEmpty())
+    {
+        // remove recipe from JSON
+        m_recipesJson.remove(m_recipesModel->itemFromIndex(selectedRecipes->last())->text());
+
+        // remove row containg selected index
+        m_recipesModel->removeRow(selectedRecipes->last().row());
+        selectedRecipes->removeLast();
+
+        // delete previous list of ingredients indices and get new one with updated indices
+        delete selectedRecipes;
+        selectedRecipes = new QList<QModelIndex>(m_recipesListView->selectionModel()->selectedRows());
+    }
+
+    // free memory alocated for the list
+    delete selectedRecipes;
+
+    // clear selection
+    m_recipesListView->selectionModel()->clearSelection();
+
+    // update JSON file
+    saveRecipesToJson();
 }
 
 void RecipePlanner::slotCreateMenu()
@@ -151,6 +177,7 @@ void RecipePlanner::createButtons()
     // connect buttons
     connect(m_addButton, &QPushButton::clicked, this, &RecipePlanner::slotAddRecipe);
     connect(m_editButton, &QPushButton::clicked, this, &RecipePlanner::slotEditRecipe);
+    connect(m_deleteButton, &QPushButton::clicked, this, &RecipePlanner::slotDeleteRecipes);
 }
 
 void RecipePlanner::createLayouts()
