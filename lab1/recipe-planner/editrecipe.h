@@ -65,10 +65,11 @@ private:
     QHBoxLayout *m_ingredientButtonLayout;
     QHBoxLayout *m_buttonLayout;
 
-    // table of ingredients and pointer to model
+    // table of ingredients and pointers to model, recipe index and to the copy of recipe item
     QTableView *m_ingredientsTableView;
     QStandardItemModel *m_recipesModel;
     QModelIndex *m_recipeIndex;
+    QStandardItem *m_copyOfRecipeItem;
 
     // group box for ingredients
     QGroupBox *m_ingredientsBox;
@@ -77,10 +78,13 @@ private:
     const int descriptionChildItem = 0;
     const int ingredientsChildItem = 1;
 
+    // selected edition mode
+    EditMode m_mode;
+
     // methods for constructor
     void createLabels();
     void createLineAndTextEdits();
-    void createPushButtons(EditMode);
+    void createPushButtons();
     void createLayouts();
     void createSpinbox();
     void setRecipeIndex(QModelIndex*&);
@@ -90,10 +94,10 @@ private:
     QString getUnit(QString);
     QString getQuantity(QString);
     int numberOfSameIngredients(QString, QString);
+    QStandardItem *copyItem(QStandardItem*);
 
 public:
     EditRecipe(EditMode, QStandardItemModel*, QWidget *parent = nullptr, QModelIndex *recipeIndex = nullptr);
-    ~EditRecipe();
 
 private slots:
     void slotAddIngredient();
@@ -101,6 +105,8 @@ private slots:
     void slotDeleteIngredients();
     void slotUpdateButtonsAndFields();
     void slotFillEditFields(const QModelIndex&);
+    void slotDiscardChanges();
+    void slotCloseWindow();
 };
 
 #endif // EDITRECIPE_H

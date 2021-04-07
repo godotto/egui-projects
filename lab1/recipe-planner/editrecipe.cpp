@@ -7,29 +7,34 @@ EditRecipe::EditRecipe(EditMode mode, QStandardItemModel *recipesModel, QWidget 
     setMinimumSize(340, 500);
     resize(350, 600);
 
+    // get edit mode
+    m_mode = mode;
+
     // set window title
-    setWindowTitle(mode == Add ? "New recipe" : "Edit recipe");
+    setWindowTitle(this->m_mode == Add ? "New recipe" : "Edit recipe");
 
     // set pointers to model and recipe's item index
     m_recipesModel = recipesModel;
     m_recipeIndex = recipeIndex;
+
+    // make a copy of item with recipe in case of discarding changes
+    if (m_mode == Edit)
+        m_copyOfRecipeItem = copyItem(m_recipesModel->itemFromIndex(*m_recipeIndex));
 
     // call helper methods to initialize all objects
     setRecipeIndex(m_recipeIndex);
     createTable();
     createLabels();
     createLineAndTextEdits();
-    createPushButtons(mode);
+    createPushButtons();
     createSpinbox();
     createLayouts();
 
     // set main layout
     setLayout(m_mainLayout);
-}
 
-EditRecipe::~EditRecipe()
-{
-    delete m_recipeIndex;
+    // connect rejected signal from dialog to slot which will revert changes
+    connect(this, &EditRecipe::rejected, this, &EditRecipe::slotDiscardChanges);
 }
 
 void EditRecipe::slotAddIngredient()
@@ -170,6 +175,23 @@ void EditRecipe::slotFillEditFields(const QModelIndex &clickedIndex)
     m_ingredientUnitLineEdit->setText(getUnit(quantityWithUnit));
 }
 
+void EditRecipe::slotDiscardChanges()
+{
+    // remove currently processed recipe from model
+    m_recipesModel->removeRow(m_recipeIndex->row());
+
+    // if it is a new recipe, do nothing more; else restore recipe from copy
+    if (m_mode == Edit)
+        m_recipesModel->appendRow(m_copyOfRecipeItem);
+}
+
+void EditRecipe::slotCloseWindow()
+{
+    // emit rejected signal from QDialog class and close the window
+//    emit rejected();
+    close();
+}
+
 void EditRecipe::createLabels()
 {
     // labels definition
@@ -192,10 +214,10 @@ void EditRecipe::createLineAndTextEdits()
     m_descriptionTextEdit = new QTextEdit(this);
 }
 
-void EditRecipe::createPushButtons(EditMode mode)
+void EditRecipe::createPushButtons()
 {
     // buttons definition
-    m_confirmUpdateRecipeButton = new QPushButton(mode == Add ? "&Ok" : "&Update", this); // determine whether it is new recipe or existing one
+    m_confirmUpdateRecipeButton = new QPushButton(m_mode == Add ? "&Ok" : "&Update", this); // determine whether it is new recipe or existing one
     m_cancelButton = new QPushButton("&Cancel", this);
     m_addIngredientButton = new QPushButton("&Add", this);
     m_editIngredientButton = new QPushButton("&Edit", this);
@@ -210,6 +232,7 @@ void EditRecipe::createPushButtons(EditMode mode)
     connect(m_addIngredientButton, &QPushButton::clicked, this, &EditRecipe::slotAddIngredient);
     connect(m_editIngredientButton, &QPushButton::clicked, this, &EditRecipe::slotEditIngredient);
     connect(m_deleteIngredientsButton, &QPushButton::clicked, this, &EditRecipe::slotDeleteIngredients);
+    connect(m_cancelButton, &QPushButton::clicked, this, &EditRecipe::slotCloseWindow);
 }
 
 void EditRecipe::createLayouts()
@@ -375,4 +398,34 @@ int EditRecipe::numberOfSameIngredients(QString name, QString unit)
 
     // return counter's value
     return numberOfSameIngredients;
+}
+
+QStandardItem *EditRecipe::copyItem(QStandardItem *original)
+{
+    // create pointer to copy of recipe item
+    auto *copy = new QStandardItem(original->text());
+
+    // append description and ingredients rows
+    copy->appendRow(new QStandardItem("recipe"));
+    copy->appendRow(new QStandardItem("ingredients"));
+
+    // copy description of recipe
+    for (auto row = 0; row < original->child(descriptionChildItem)->rowCount(); row++)
+        copy->child(descriptionChildItem)->appendRow(original->child(descriptionChildItem)->child(row)->clone());
+
+    // copy ingredients of recipe
+    for (auto row = 0; row < original->child(ingredientsChildItem)->rowCount(); row++)
+    {
+        // create a temporary list with row of ingredient's name, number and unit
+        auto rowList = QList<QStandardItem*>();
+        rowList.append(original->child(ingredientsChildItem)->child(row, 0)->clone());
+        rowList.append(original->child(ingredientsChildItem)->child(row, 1)->clone());
+        rowList[1]->setTextAlignment(Qt::AlignCenter);
+
+        // append both columns
+        copy->child(ingredientsChildItem)->appendRow(rowList);
+    }
+
+    // return pointer
+    return copy;
 }

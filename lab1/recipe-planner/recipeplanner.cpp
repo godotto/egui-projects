@@ -35,12 +35,19 @@ void RecipePlanner::slotCloseApplication()
 
 void RecipePlanner::slotAddRecipe()
 {
+    // open window with add mode and pass the model
     auto *editRecipeWindow = new EditRecipe(EditRecipe::Add, m_recipesModel, this);
     editRecipeWindow->exec();
 }
 
 void RecipePlanner::slotEditRecipe()
 {
+    // get index of currently edited recipe
+    auto selectedRecipeIndex = m_recipesListView->selectionModel()->selectedIndexes()[0];
+
+    // open window with edit mode and pass the model with edited recipe's index
+    auto *editRecipeWindow = new EditRecipe(EditRecipe::Edit, m_recipesModel, this, &selectedRecipeIndex);
+    editRecipeWindow->exec();
 }
 
 void RecipePlanner::slotDeleteRecipe()
@@ -100,6 +107,7 @@ void RecipePlanner::createButtons()
 
     // connect buttons
     connect(m_addButton, &QPushButton::clicked, this, &RecipePlanner::slotAddRecipe);
+    connect(m_editButton, &QPushButton::clicked, this, &RecipePlanner::slotEditRecipe);
 }
 
 void RecipePlanner::createLayouts()
@@ -190,6 +198,7 @@ void RecipePlanner::createModel()
                 auto rowList = QList<QStandardItem*>();
                 rowList.append(new QStandardItem(ingredient));
                 rowList.append(new QStandardItem(recipeJsonObject[ingredient].toString()));
+                rowList[1]->setTextAlignment(Qt::AlignCenter);
 
                 // add content from list to the model
                 recipeIngredients->appendRow(rowList);
