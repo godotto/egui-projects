@@ -19,8 +19,11 @@ class RecipePlanner : public QMainWindow
     Q_OBJECT
 
 private:
-    QWidget *m_centralWidget;   // main widget
-    QMenuBar *m_menuBar;        // menu bar
+    // main widget
+    QWidget *m_centralWidget;
+
+    // menu bar
+    QMenuBar *m_menuBar;
 
     // buttons
     QPushButton *m_addButton;
@@ -43,6 +46,9 @@ private:
 
     // json file
     QJsonObject m_recipesJson;
+
+    // recipe edit window
+    EditRecipe *m_editRecipeWindow;
 
     // methods for constructor
     void createButtons();

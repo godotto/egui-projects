@@ -36,8 +36,8 @@ void RecipePlanner::slotCloseApplication()
 void RecipePlanner::slotAddRecipe()
 {
     // open window with add mode and pass the model
-    auto *editRecipeWindow = new EditRecipe(EditRecipe::Add, m_recipesModel, this);
-    editRecipeWindow->exec();
+    m_editRecipeWindow = new EditRecipe(EditRecipe::Add, m_recipesModel, this);
+    m_editRecipeWindow->exec();
 }
 
 void RecipePlanner::slotEditRecipe()
@@ -45,9 +45,14 @@ void RecipePlanner::slotEditRecipe()
     // get index of currently edited recipe
     auto selectedRecipeIndex = m_recipesListView->selectionModel()->selectedIndexes()[0];
 
-    // open window with edit mode and pass the model with edited recipe's index
-    auto *editRecipeWindow = new EditRecipe(EditRecipe::Edit, m_recipesModel, this, &selectedRecipeIndex);
-    editRecipeWindow->exec();
+    // create window with edit mode and pass the model with edited recipe's index
+    m_editRecipeWindow= new EditRecipe(EditRecipe::Edit, m_recipesModel, this, &selectedRecipeIndex);
+
+    // connect edit recipe window to the slot responsible for updating the buttons
+    connect(m_editRecipeWindow, &EditRecipe::rejected, this, &RecipePlanner::slotUpdateButtons);
+
+    // open window
+    m_editRecipeWindow->exec();
 }
 
 void RecipePlanner::slotDeleteRecipe()

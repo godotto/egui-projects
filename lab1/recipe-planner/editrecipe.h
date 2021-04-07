@@ -107,6 +107,7 @@ private slots:
     void slotFillEditFields(const QModelIndex&);
     void slotDiscardChanges();
     void slotCloseWindow();
+    void slotConfirmRecipe();
 };
 
 #endif // EDITRECIPE_H

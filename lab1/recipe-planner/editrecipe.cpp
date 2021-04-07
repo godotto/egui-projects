@@ -187,9 +187,21 @@ void EditRecipe::slotDiscardChanges()
 
 void EditRecipe::slotCloseWindow()
 {
-    // emit rejected signal from QDialog class and close the window
-//    emit rejected();
+    // close the window
     close();
+}
+
+void EditRecipe::slotConfirmRecipe()
+{
+    // update recipe name
+    m_recipesModel->itemFromIndex(*m_recipeIndex)->setText(m_nameLineEdit->text());
+
+    // free memory of copied recipe item
+    if (m_mode == Edit)
+        delete m_copyOfRecipeItem;
+
+    // close window
+    accept();
 }
 
 void EditRecipe::createLabels()
@@ -233,6 +245,7 @@ void EditRecipe::createPushButtons()
     connect(m_editIngredientButton, &QPushButton::clicked, this, &EditRecipe::slotEditIngredient);
     connect(m_deleteIngredientsButton, &QPushButton::clicked, this, &EditRecipe::slotDeleteIngredients);
     connect(m_cancelButton, &QPushButton::clicked, this, &EditRecipe::slotCloseWindow);
+    connect(m_confirmUpdateRecipeButton, &QPushButton::clicked, this, &EditRecipe::slotConfirmRecipe);
 }
 
 void EditRecipe::createLayouts()
