@@ -89,21 +89,28 @@ void EditRecipe::slotEditIngredient()
 void EditRecipe::slotDeleteIngredients()
 {
     // get selected indices
-    auto selectedIngredientIndices = m_ingredientsTableView->selectionModel()->selectedIndexes();
+    auto selectedIngredientIndices = new QList<QModelIndex>(m_ingredientsTableView->selectionModel()->selectedIndexes());
 
     // get index with ingredients
     auto ingredientsIndex = m_recipesModel->itemFromIndex(*m_recipeIndex)->child(ingredientsChildItem)->index();
 
     // remove row of each selected pair of indices
-    while (!selectedIngredientIndices.isEmpty())
+    while (!selectedIngredientIndices->isEmpty())
     {
         // remove row containg selected index
-        m_recipesModel->removeRow(selectedIngredientIndices.last().row(), ingredientsIndex);
+        m_recipesModel->removeRow(selectedIngredientIndices->last().row(), ingredientsIndex);
 
         // as indices are in pairs remove both of them from the list
-        selectedIngredientIndices.removeLast();
-        selectedIngredientIndices.removeLast();
+        selectedIngredientIndices->removeLast();
+        selectedIngredientIndices->removeLast();
+
+        // delete previous list of ingredients indices and get new one with updated indices
+        delete selectedIngredientIndices;
+        selectedIngredientIndices = new QList<QModelIndex>(m_ingredientsTableView->selectionModel()->selectedIndexes());
     }
+
+    // free memory alocated for the list
+    delete selectedIngredientIndices;
 
     // clear selection
     m_ingredientsTableView->selectionModel()->clearSelection();
