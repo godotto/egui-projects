@@ -89,7 +89,7 @@ private:
     // auxiliary methods
     QString getUnit(QString);
     QString getQuantity(QString);
-    bool doesIngredientExist(QString, QString);
+    int numberOfSameIngredients(QString, QString);
 
 public:
     EditRecipe(EditMode, QStandardItemModel*, QWidget *parent = nullptr, QModelIndex *recipeIndex = nullptr);

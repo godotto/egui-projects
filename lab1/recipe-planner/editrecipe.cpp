@@ -39,7 +39,7 @@ void EditRecipe::slotAddIngredient()
     auto quantityAndUnit = QString(m_ingredientQuantitySpinbox->text() + " " + m_ingredientUnitLineEdit->text());
 
     // make sure that input data is not empty and that ingredient is unique
-    if (name != "" && getUnit(quantityAndUnit) != "" && getQuantity(quantityAndUnit) != "" && doesIngredientExist(name, m_ingredientUnitLineEdit->text()))
+    if (name != "" && getUnit(quantityAndUnit) != "" && getQuantity(quantityAndUnit) != "" && numberOfSameIngredients(name, m_ingredientUnitLineEdit->text()) == 0)
     {
         // get item with ingredients
         auto ingredients = m_recipesModel->itemFromIndex(*m_recipeIndex)->child(ingredientsChildItem);
@@ -67,7 +67,7 @@ void EditRecipe::slotEditIngredient()
     auto quantityAndUnit = QString(m_ingredientQuantitySpinbox->text() + " " + m_ingredientUnitLineEdit->text());
 
     // make sure that input data is not empty and that ingredient is unique
-    if (name != "" && getUnit(quantityAndUnit) != "" && getQuantity(quantityAndUnit) != "" && doesIngredientExist(name, m_ingredientUnitLineEdit->text()))
+    if (name != "" && getUnit(quantityAndUnit) != "" && getQuantity(quantityAndUnit) != "" && numberOfSameIngredients(name, m_ingredientUnitLineEdit->text()) <= 1)
     {
         // get selected indices
         auto selectedIngredientIndices = m_ingredientsTableView->selectionModel()->selectedIndexes();
@@ -355,8 +355,11 @@ QString EditRecipe::getQuantity(QString quantityWithUnit)
     return quantityWithUnit.left(quantityWithUnit.indexOf(' '));
 }
 
-bool EditRecipe::doesIngredientExist(QString name, QString unit)
+int EditRecipe::numberOfSameIngredients(QString name, QString unit)
 {
+    // initialize counter variable
+    auto numberOfSameIngredients = 0;
+
     // get list of ingredients with the same name
     auto ingredientItems = m_recipesModel->findItems(name, Qt::MatchRecursive);
 
@@ -365,11 +368,11 @@ bool EditRecipe::doesIngredientExist(QString name, QString unit)
         // get string of quantity with unit
         auto quantityWithUnit = m_recipesModel->itemFromIndex(ingredient->index().siblingAtColumn(1))->text();
 
-        // if there is already an ingredient with the same name and unit return false
+        // if there is already an ingredient with the same name and unit increment the counter
         if (ingredient->text() == name && getUnit(quantityWithUnit) == unit)
-            return false;
+            numberOfSameIngredients++;
     }
 
-    // otherwise return true
-    return true;
+    // return counter's value
+    return numberOfSameIngredients;
 }
