@@ -3,8 +3,11 @@
 RecipePlanner::RecipePlanner(QWidget *parent)
     : QMainWindow(parent)
 {
+    // load file
+    m_jsonFileName = QFileDialog::getOpenFileName(this, "Open recipes", "", "JSON File (*.json)");
+
     // load recipes from json
-    readRecipesFromJson();
+    readRecipesFromJson(m_jsonFileName);
 
     // set window size
     setMinimumSize(400, 330);
@@ -87,7 +90,7 @@ void RecipePlanner::slotDeleteRecipes()
     m_recipesListView->selectionModel()->clearSelection();
 
     // update JSON file
-    saveRecipesToJson();
+    saveRecipesToJson(m_jsonFileName);
 }
 
 void RecipePlanner::slotCreateMenu()
@@ -101,6 +104,14 @@ void RecipePlanner::slotCreateMenu()
 
 void RecipePlanner::slotLoadFile()
 {
+    // get another file name
+    m_jsonFileName = QFileDialog::getOpenFileName(this, "Open recipes", "", "JSON File (*.json)");
+
+    // delete previous model
+    delete m_recipesModel;
+
+    // load recipes from json
+    readRecipesFromJson(m_jsonFileName);
 }
 
 void RecipePlanner::slotUpdateButtons()
@@ -157,7 +168,7 @@ void RecipePlanner::slotUpdateJsonObject(QStandardItem *updatedRecipeItem)
     // update main JSON object
     m_recipesJson[recipeName] = recipeJson;
 
-    saveRecipesToJson();
+    saveRecipesToJson(m_jsonFileName);
 }
 
 void RecipePlanner::createButtons()
@@ -222,6 +233,7 @@ void RecipePlanner::createActions()
     // connect slots
     connect(m_exitAction, &QAction::triggered, this, &RecipePlanner::slotCloseApplication);
     connect(m_createMenuAction, &QAction::triggered, this, &RecipePlanner::slotCreateMenu);
+    connect(m_openFile, &QAction::triggered, this, &RecipePlanner::slotLoadFile);
 }
 
 void RecipePlanner::createMenu()
@@ -304,6 +316,10 @@ void RecipePlanner::createList()
 
 bool RecipePlanner::readRecipesFromJson(QString fileName)
 {
+    // if file does not exist - return false
+    if (fileName.isEmpty())
+        return false;
+
     // open selected file or deafualt - recipes.json
     QFile loadFile(fileName);
 
@@ -319,6 +335,13 @@ bool RecipePlanner::readRecipesFromJson(QString fileName)
 
     // save data in QJsonObject object
     m_recipesJson = QJsonDocument::fromJson(recipesData).object();
+
+    // create model from JSON file
+    createModel();
+
+    if (m_recipesListView != nullptr)
+        m_recipesListView->setModel(m_recipesModel);
+
     return true;
 }
 

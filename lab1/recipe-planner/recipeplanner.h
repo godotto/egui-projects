@@ -15,6 +15,8 @@
 #include <QJsonArray>
 #include <QStandardItemModel>
 
+#include <QFileDialog>
+
 class RecipePlanner : public QMainWindow
 {
     Q_OBJECT
@@ -43,7 +45,7 @@ private:
 
     // model for recipes and list of recipes
     QStandardItemModel *m_recipesModel;
-    QListView *m_recipesListView;
+    QListView *m_recipesListView = nullptr;
 
     // json file
     QJsonObject m_recipesJson;
@@ -51,6 +53,9 @@ private:
     // dialog windows
     EditRecipe *m_editRecipeWindow;
     CreateMenu *m_createMenuWindow;
+
+    // file name
+    QString m_jsonFileName;
 
     // methods for constructor
     void createButtons();
@@ -61,8 +66,8 @@ private:
     void createList();
 
     // json handling
-    bool readRecipesFromJson(QString fileName = "recipes.json");
-    bool saveRecipesToJson(QString fileName = "recipes.json");
+    bool readRecipesFromJson(QString);
+    bool saveRecipesToJson(QString);
 
     // constant values to get rid of magic numbers
     const int descriptionChildItem = 0;
