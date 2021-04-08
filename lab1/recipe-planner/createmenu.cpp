@@ -15,6 +15,7 @@ CreateMenu::CreateMenu(QStandardItemModel *recipeModel, QWidget *parent) :
     adjustLayouts();
     createModels();
     adjustLists();
+    adjustTable();
     connectSlots();
 }
 
@@ -52,6 +53,8 @@ void CreateMenu::slotAddRecipe()
     auto stringList = m_selectedRecipesModel->stringList();
     stringList.append(selectedRecipeItem->text());
     m_selectedRecipesModel->setStringList(stringList);
+
+    addIngredient("placki", "1.2", "sztuk");
 }
 
 void CreateMenu::slotRemoveRecipe()
@@ -89,7 +92,8 @@ void CreateMenu::adjustLists()
 {
     // connect lists to the models
     ui->m_recipeListView->setModel(m_recipeModel);
-    ui->m_selectedRecipesListView->setModel(m_selectedRecipesModel);
+//    ui->m_selectedRecipesListView->setModel(m_selectedRecipesModel);
+    ui->m_selectedRecipesListView->setModel(m_ingredientsModel);
 
     // set lists' properties
     ui->m_recipeListView->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -103,9 +107,19 @@ void CreateMenu::adjustTable()
     // connect view with model
     ui->m_ingredientsTableView->setModel(m_ingredientsModel);
 
-    // set table's  properties
+    // set table's selection properties
     ui->m_ingredientsTableView->setSelectionMode(QAbstractItemView::NoSelection);
     ui->m_ingredientsTableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+    // hide headers
+    ui->m_ingredientsTableView->horizontalHeader()->setVisible(false);
+    ui->m_ingredientsTableView->verticalHeader()->setVisible(false);
+
+    // hide grid
+    ui->m_ingredientsTableView->setShowGrid(false);
+
+    // stretch the last column to fill whole table with content
+    ui->m_ingredientsTableView->horizontalHeader()->setStretchLastSection(true);
 }
 
 void CreateMenu::connectSlots()
@@ -122,4 +136,77 @@ void CreateMenu::connectSlots()
 
     // remove recipe from the menu
     connect(ui->m_removeButton, &QPushButton::clicked, this, &CreateMenu::slotRemoveRecipe);
+}
+
+QString CreateMenu::getUnit(QString quantityWithUnit)
+{
+    // get substring starting with the first space character
+    auto unit = quantityWithUnit.mid(quantityWithUnit.indexOf(' '));
+
+    // remove leading space character
+    unit = unit.remove(0, 1);
+
+    return unit;
+}
+
+QString CreateMenu::getQuantity(QString quantityWithUnit)
+{
+    // get first characters before space
+    return quantityWithUnit.left(quantityWithUnit.indexOf(' '));
+}
+
+void CreateMenu::addIngredient(QString name, QString quantity, QString unit)
+{
+    // get ingredients with the same name
+    auto ingredientsWithSameName = m_ingredientsModel->findItems(name);
+
+    // determine whether there is already ingredient with the same name
+    if (ingredientsWithSameName.length() == 0)
+    {
+        // create a temporary list with row of ingredient's name, number and unit
+        auto rowList = QList<QStandardItem*>();
+        rowList.append(new QStandardItem(name));
+        rowList.append(new QStandardItem(quantity));
+        rowList.append(new QStandardItem(unit));
+
+        // add row to the model
+        m_ingredientsModel->appendRow(rowList);
+    }
+    else
+    {
+        // check every ingredient with the same name
+        for (auto &&ingredient : ingredientsWithSameName)
+        {
+            // get unit
+            auto ingredientIndex = ingredient->index();
+            auto unitIndex = m_ingredientsModel->index(ingredientIndex.row(), 2);
+            auto ingredientUnit = m_ingredientsModel->itemFromIndex(unitIndex);
+
+            // if unit is the same add quantity to existing one
+            if (ingredientUnit->text() == unit)
+            {
+                // get quantity
+                auto quantityIndex = m_ingredientsModel->index(ingredientIndex.row(), 1);
+                auto ingredientQuantity = m_ingredientsModel->itemFromIndex(quantityIndex)->text().toDouble();
+
+                // calculate new quantity
+                auto newQuantity = ingredientQuantity + quantity.toDouble();
+
+                // update quantity in the model
+                m_ingredientsModel->itemFromIndex(quantityIndex)->setText(QString::number(newQuantity));
+
+                // leave method
+                return;
+            }
+        }
+
+        // create a temporary list with row of ingredient's name, number and unit
+        auto rowList = QList<QStandardItem*>();
+        rowList.append(new QStandardItem(name));
+        rowList.append(new QStandardItem(quantity));
+        rowList.append(new QStandardItem(unit));
+
+        // add row to the model
+        m_ingredientsModel->appendRow(rowList);
+    }
 }

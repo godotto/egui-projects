@@ -6,6 +6,8 @@
 #include <QStandardItemModel>
 #include <QStringListModel>
 
+#include <QTableView>
+
 namespace Ui {
 class CreateMenu;
 }
@@ -23,12 +25,19 @@ private:
     QStringListModel *m_selectedRecipesModel;
     QStandardItemModel *m_ingredientsModel;
 
+    QTableView *m_test;
+
     // methods for constructor
     void adjustLayouts();
     void createModels();
     void adjustLists();
     void adjustTable();
     void connectSlots();
+
+    // auxiliary methods
+    QString getUnit(QString);
+    QString getQuantity(QString);
+    void addIngredient(QString, QString, QString);
 
 public:
     explicit CreateMenu(QStandardItemModel*, QWidget *parent = nullptr);
