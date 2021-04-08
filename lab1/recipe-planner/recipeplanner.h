@@ -2,6 +2,7 @@
 #define RECIPEPLANNER_H
 
 #include "editrecipe.h"
+#include "createmenu.h"
 
 #include <QMainWindow>
 
@@ -47,8 +48,9 @@ private:
     // json file
     QJsonObject m_recipesJson;
 
-    // recipe edit window
+    // dialog windows
     EditRecipe *m_editRecipeWindow;
+    CreateMenu *m_createMenuWindow;
 
     // methods for constructor
     void createButtons();

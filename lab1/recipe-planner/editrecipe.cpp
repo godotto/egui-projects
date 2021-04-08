@@ -391,7 +391,7 @@ void EditRecipe::createTable()
 
     // set selection rules
     m_ingredientsTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
-    m_ingredientsTableView->setEditTriggers(QAbstractItemView::EditTrigger::NoEditTriggers);
+    m_ingredientsTableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     m_ingredientsTableView->setSelectionMode(QAbstractItemView::MultiSelection);
 
     // connect table to slot responsible for filling edit fields

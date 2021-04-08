@@ -45,7 +45,7 @@ private:
     // text edit
     QTextEdit *m_descriptionTextEdit;
 
-    // pushbuttons
+    // push buttons
     QPushButton *m_addIngredientButton;
     QPushButton *m_editIngredientButton;
     QPushButton *m_deleteIngredientsButton;

@@ -9,11 +9,13 @@ CONFIG += c++11
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    createmenu.cpp \
     editrecipe.cpp \
     main.cpp \
     recipeplanner.cpp
 
 HEADERS += \
+    createmenu.h \
     editrecipe.h \
     recipeplanner.h
 
@@ -24,3 +26,6 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 DISTFILES += \
     recipe-planner.supp
+
+FORMS += \
+    createmenu.ui

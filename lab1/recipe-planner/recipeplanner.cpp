@@ -95,6 +95,11 @@ void RecipePlanner::slotDeleteRecipes()
 
 void RecipePlanner::slotCreateMenu()
 {
+    // create window
+    m_createMenuWindow = new CreateMenu(m_recipesModel, this);
+
+    // open window
+    m_createMenuWindow->exec();
 }
 
 void RecipePlanner::slotLoadFile()
@@ -216,6 +221,7 @@ void RecipePlanner::createActions()
 
     // connect slots
     connect(m_exitAction, &QAction::triggered, this, &RecipePlanner::slotCloseApplication);
+    connect(m_createMenuAction, &QAction::triggered, this, &RecipePlanner::slotCreateMenu);
 }
 
 void RecipePlanner::createMenu()
@@ -288,9 +294,9 @@ void RecipePlanner::createList()
     // set model with recipes as model for the list
     m_recipesListView->setModel(m_recipesModel);
 
-    // set lists properties
+    // set list's properties
     m_recipesListView->setSelectionMode(QAbstractItemView::MultiSelection);
-    m_recipesListView->setEditTriggers(QAbstractItemView::EditTrigger::NoEditTriggers);
+    m_recipesListView->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
     // connect list to the slot responsible for disabling buttons
     connect(m_recipesListView, &QListView::pressed, this, &RecipePlanner::slotUpdateButtons);
