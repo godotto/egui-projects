@@ -67,6 +67,8 @@ void CreateMenu::slotRemoveRecipe()
 
     // update selection
     slotUpdateButtons();
+
+    removeIngredient("placki", "1.2", "sztuk");
 }
 
 void CreateMenu::adjustLayouts()
@@ -92,8 +94,7 @@ void CreateMenu::adjustLists()
 {
     // connect lists to the models
     ui->m_recipeListView->setModel(m_recipeModel);
-//    ui->m_selectedRecipesListView->setModel(m_selectedRecipesModel);
-    ui->m_selectedRecipesListView->setModel(m_ingredientsModel);
+    ui->m_selectedRecipesListView->setModel(m_selectedRecipesModel);
 
     // set lists' properties
     ui->m_recipeListView->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -208,5 +209,44 @@ void CreateMenu::addIngredient(QString name, QString quantity, QString unit)
 
         // add row to the model
         m_ingredientsModel->appendRow(rowList);
+    }
+}
+
+void CreateMenu::removeIngredient(QString name, QString quantity, QString unit)
+{
+    // get ingredients with the same name
+    auto ingredientsWithSameName = m_ingredientsModel->findItems(name);
+
+    // determine whether there is already ingredient with the same name
+    if (ingredientsWithSameName.length() != 0)
+    {
+        // check every ingredient with the same name
+        for (auto &&ingredient : ingredientsWithSameName)
+        {
+            // get unit
+            auto ingredientIndex = ingredient->index();
+            auto unitIndex = m_ingredientsModel->index(ingredientIndex.row(), 2);
+            auto ingredientUnit = m_ingredientsModel->itemFromIndex(unitIndex);
+
+            // if unit is the same add quantity to existing one
+            if (ingredientUnit->text() == unit)
+            {
+                // get quantity
+                auto quantityIndex = m_ingredientsModel->index(ingredientIndex.row(), 1);
+                auto ingredientQuantity = m_ingredientsModel->itemFromIndex(quantityIndex)->text().toDouble();
+
+                // calculate new quantity
+                auto newQuantity = ingredientQuantity - quantity.toDouble();
+
+                // if new quantity is zero remove ingredient from the model
+                if (newQuantity == 0)
+                    m_ingredientsModel->removeRow(ingredientsWithSameName.last()->row());
+                else
+                    m_ingredientsModel->itemFromIndex(quantityIndex)->setText(QString::number(newQuantity));
+
+                // leave method
+                return;
+            }
+        }
     }
 }

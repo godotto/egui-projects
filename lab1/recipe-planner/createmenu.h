@@ -38,6 +38,7 @@ private:
     QString getUnit(QString);
     QString getQuantity(QString);
     void addIngredient(QString, QString, QString);
+    void removeIngredient(QString, QString, QString);
 
 public:
     explicit CreateMenu(QStandardItemModel*, QWidget *parent = nullptr);
