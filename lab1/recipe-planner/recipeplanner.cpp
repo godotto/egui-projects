@@ -23,9 +23,6 @@ RecipePlanner::RecipePlanner(QWidget *parent)
     createLayouts();
     createActions();
     createMenu();
-
-    // set QWidget with content as central widget
-    m_centralWidget->setLayout(m_mainLayout);
 }
 
 void RecipePlanner::slotCloseApplication()
@@ -202,6 +199,9 @@ void RecipePlanner::createLayouts()
     // add list and button layout to the main layout
     m_mainLayout->addWidget(m_recipesListView);
     m_mainLayout->addLayout(m_buttonLayout);
+
+    // set QWidget with content as central widget
+    m_centralWidget->setLayout(m_mainLayout);
 }
 
 void RecipePlanner::createActions()

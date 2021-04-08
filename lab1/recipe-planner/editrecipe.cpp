@@ -30,9 +30,6 @@ EditRecipe::EditRecipe(EditMode mode, QStandardItemModel *recipesModel, QWidget 
     createSpinbox();
     createLayouts();
 
-    // set main layout
-    setLayout(m_mainLayout);
-
     // connect rejected signal from dialog to slot which will revert changes
     connect(this, &EditRecipe::rejected, this, &EditRecipe::slotDiscardChanges);
 }
@@ -336,6 +333,9 @@ void EditRecipe::createLayouts()
     m_mainLayout->addLayout(m_descriptionLayout);
     m_mainLayout->addWidget(m_ingredientsBox);
     m_mainLayout->addLayout(m_buttonLayout);
+
+    // set main layout
+    setLayout(m_mainLayout);
 }
 
 void EditRecipe::createSpinbox()
