@@ -54,13 +54,15 @@ void CreateMenu::slotAddRecipe()
     stringList.append(selectedRecipeItem->text());
     m_selectedRecipesModel->setStringList(stringList);
 
-    addIngredient("placki", "1.2", "sztuk");
+    // add all ingredients from recipe
+    addIngredients(selectedRecipeItem);
 }
 
 void CreateMenu::slotRemoveRecipe()
 {
     // get selected recipe
     auto selectedRecipeIndex = ui->m_selectedRecipesListView->selectionModel()->selectedRows();
+    auto selectedRecipeName = m_selectedRecipesModel->stringList()[selectedRecipeIndex.last().row()];
 
     // remove itme from the list
     m_selectedRecipesModel->removeRow(selectedRecipeIndex.last().row());
@@ -68,7 +70,8 @@ void CreateMenu::slotRemoveRecipe()
     // update selection
     slotUpdateButtons();
 
-    removeIngredient("placki", "1.2", "sztuk");
+    // remove all ingredients from recipe
+    removeIngredients(selectedRecipeName);
 }
 
 void CreateMenu::adjustLayouts()
@@ -248,5 +251,40 @@ void CreateMenu::removeIngredient(QString name, QString quantity, QString unit)
                 return;
             }
         }
+    }
+}
+
+void CreateMenu::addIngredients(QStandardItem *recipe)
+{
+    // get ingredients item from model
+    auto ingredients = recipe->child(1);
+
+    for (auto row = 0; row < ingredients->rowCount(); row++)
+    {
+        // get ingredient name, quantity and unit
+        auto ingredientName = ingredients->child(row, 0)->text();
+        auto ingredientQuantity = getQuantity(ingredients->child(row, 1)->text());
+        auto ingredientUnit = getUnit(ingredients->child(row, 1)->text());
+
+        // add ingredient to the model
+        addIngredient(ingredientName, ingredientQuantity, ingredientUnit);
+    }
+}
+
+void CreateMenu::removeIngredients(QString recipeName)
+{
+    // get ingredients item from model
+    auto recipeItem = m_recipeModel->findItems(recipeName);
+    auto ingredients = recipeItem.last()->child(1);
+
+    for (auto row = 0; row < ingredients->rowCount(); row++)
+    {
+        // get ingredient name, quantity and unit
+        auto ingredientName = ingredients->child(row, 0)->text();
+        auto ingredientQuantity = getQuantity(ingredients->child(row, 1)->text());
+        auto ingredientUnit = getUnit(ingredients->child(row, 1)->text());
+
+        // add ingredient to the model
+        removeIngredient(ingredientName, ingredientQuantity, ingredientUnit);
     }
 }
