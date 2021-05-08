@@ -1,2 +1,5 @@
-# QT projecy build directory
+# QT project build directory
 build-recipe-planner-Desktop-Debug/
+
+# Visual Studio Code config directory
+.vscode/
