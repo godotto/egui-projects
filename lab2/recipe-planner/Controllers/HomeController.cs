@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -10,18 +11,43 @@ using recipe_planner.Models;
 namespace recipe_planner.Controllers
 {
     public class HomeController : Controller
-    {
+    {    
         // list of recipe models
-        public List<RecipeModel> recipes = new List<RecipeModel>();
+        static List<RecipeModel> recipes = new List<RecipeModel>();
 
         public HomeController()
         {
-            ReadRecipeFile();
+            // if list is empty, read recipes from JSON file
+            if (recipes.Count == 0)
+                ReadRecipeFile();
         }
 
         public IActionResult Index()
         {
             return View(recipes);
+        }
+
+        public IActionResult NewRecipe()
+        {
+            return View(new RecipeModel());
+        }
+
+        [HttpPost]
+        public IActionResult AddRecipe(string Name, string Description)
+        {
+            // create new recipe model object and assign recipe's name
+            var newRecipe = new RecipeModel();
+            newRecipe.Name = Name;
+
+            // remove \r characters from line breaks
+            Description = Description.Replace('\r', '\0');
+
+            // save splited description to new recipe object
+            newRecipe.Description = Description.Split('\n').ToList();
+
+            // add recipe to the list and return to the main view
+            recipes.Add(newRecipe);
+            return RedirectToAction("Index");
         }
 
         private void ReadRecipeFile()
