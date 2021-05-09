@@ -1,8 +1,31 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
-}
+﻿@model List<RecipeModel>
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+@{
+    ViewData["Title"] = "recipe list";
+}
+<div class="container">
+    <div class="row">
+        <div class="col-9">
+            <table class="table table-hover table-border">
+                @foreach (var recipe in Model)
+                {
+                    <tr>
+                        <td>@recipe.Name</td>
+                        <td style="text-align: end;">
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-success btn">Edit</button>
+                                <button type="button" class="btn btn-danger btn">Delete</button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </table>
+        </div>
+        <div class="col-3">
+            <div class="btn-group-vertical">
+                <button type="button" class="btn btn-outline-primary btn-lg">Add</button>
+                <button type="button" class="btn btn-outline-primary btn-lg">Create menu</button>
+            </div>
+        </div>
+    </div>
 </div>

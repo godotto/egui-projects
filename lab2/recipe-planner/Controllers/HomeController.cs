@@ -21,12 +21,7 @@ namespace recipe_planner.Controllers
 
         public IActionResult Index()
         {
-            return View();
-        }
-
-        public IActionResult Privacy()
-        {
-            return View();
+            return View(recipes);
         }
 
         private void ReadRecipeFile()
