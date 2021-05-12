@@ -36,6 +36,10 @@ namespace recipe_planner.Controllers
         {
             // pass list of ingredients to view
             ViewBag.ingredients = ingredients;
+
+            // set mode to add
+            TempData["mode"] = "add";
+
             return View(new NewRecipeModelView());
         }
 
@@ -164,6 +168,9 @@ namespace recipe_planner.Controllers
             foreach (var ingredient in ingredients)
                 editedRecipe.Ingredients.Add(ingredient);
 
+            // clear list of ingredients, add recipe to the list, save it to JSON file and return to the main view
+            ingredients.Clear();
+            WriteRecipesToFile();
             return RedirectToAction("Index");
         }
 #nullable disable
