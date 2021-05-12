@@ -31,7 +31,6 @@ namespace recipe_planner.Controllers
 
         public IActionResult Index()
         {
-            WriteRecipesToFile();
             return View(recipes);
         }
 
@@ -67,7 +66,7 @@ namespace recipe_planner.Controllers
             // clear list of ingredients, add recipe to the list, save it to JSON file and return to the main view
             ingredients.Clear();
             recipes.Add(newRecipe);
-            // WriteRecipeFile();
+            WriteRecipesToFile();
             return RedirectToAction("Index");
         }
 
@@ -92,6 +91,18 @@ namespace recipe_planner.Controllers
             return RedirectToAction("NewRecipe");
         }
 #nullable disable
+
+        public IActionResult DeleteRecipe(int id)
+        {
+            // only if ID is in range remove chosen recipe from the list and update JSON file
+            if (id < recipes.Count && id >= 0)
+            {
+                recipes.RemoveAt(id);
+                WriteRecipesToFile();
+            }
+
+            return RedirectToAction("Index");
+        }
 
         [HttpPost]
         public IActionResult DiscardRecipe()
@@ -151,25 +162,33 @@ namespace recipe_planner.Controllers
         // write recipes to file
         private void WriteRecipesToFile()
         {
+            // enable pretty printing
             var serializerOptions = new JsonSerializerOptions
             {
                 WriteIndented = true
             };
 
+            // dictionary representing whole JSON file with name of recipe as key and descrpition with ingredients as values
             var recipesDictionary = new Dictionary<string, Dictionary<string, dynamic>>();
 
+            // read each recipe from the list
             foreach (var recipe in recipes)
             {
+                // dictionary representing description with array of string lines or ingredient with quantity and unit
                 var recipeDictionary = new Dictionary<string, dynamic>();
 
+                // add description
                 recipeDictionary.Add("recipe", recipe.Description);
 
+                // iterate through each ingredient and add it to dictionary
                 foreach (var ingredient in recipe.Ingredients)
                     recipeDictionary.Add(ingredient.Name, Convert.ToString(ingredient.Quantity) + ' ' + ingredient.Unit);
 
+                // add recipe ditionary to the main dictionary
                 recipesDictionary.Add(recipe.Name, recipeDictionary);
             }
 
+            // serialize dictionary and save it to JSON file
             var jsonString = JsonSerializer.Serialize(recipesDictionary, serializerOptions);
             System.IO.File.WriteAllText("recipes.json", jsonString);
         }
