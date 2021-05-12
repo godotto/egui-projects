@@ -11,9 +11,12 @@ using recipe_planner.Models;
 namespace recipe_planner.Controllers
 {
     public class HomeController : Controller
-    {    
+    {
         // list of recipe models
         static List<RecipeModel> recipes = new List<RecipeModel>();
+
+        // list of ingredient models
+        static List<IngredientModel> ingredients = new List<IngredientModel>();
 
         public HomeController()
         {
@@ -29,25 +32,56 @@ namespace recipe_planner.Controllers
 
         public IActionResult NewRecipe()
         {
-            return View(new RecipeModel());
+            // create new recipe model and add it to the list
+            recipes.Add(new RecipeModel());
+
+            // pass list of ingredients to view
+            ViewBag.ingredients = ingredients;
+
+            return View(new NewRecipeModelView());
         }
 
+#nullable enable
         [HttpPost]
-        public IActionResult AddRecipe(string Name, string Description)
+        public IActionResult AddRecipe(string recipeName, string? description)
         {
-            // create new recipe model object and assign recipe's name
-            var newRecipe = new RecipeModel();
-            newRecipe.Name = Name;
+            // get new recipe model object and assign recipe's name
+            var newRecipe = recipes.Last<RecipeModel>();
+            newRecipe.Name = recipeName;
 
-            // remove \r characters from line breaks
-            Description = Description.Replace('\r', '\0');
+            if (description != null)
+            {
+                // remove \r characters from line breaks and save splited description to new recipe object
+                description = description.Replace('\r', '\0'); 
+                newRecipe.Description = description.Split('\n').ToList();
+            }
+            else // if description was empty, assign empty list
+                newRecipe.Description = new List<string>();
 
-            // save splited description to new recipe object
-            newRecipe.Description = Description.Split('\n').ToList();
-
-            // add recipe to the list and return to the main view
-            recipes.Add(newRecipe);
+            // clear list of ingredients and return to the main view
+            ingredients.Clear();
             return RedirectToAction("Index");
+        }
+#nullable disable
+
+        [HttpPost]
+        public IActionResult AddIngredient(string ingredientName, float quantity, string unit, string recipeName, string description)
+        {
+            // create new ingredient model and assign ingredient's name, quantity and unit
+            var newIngredient = new IngredientModel();
+            newIngredient.Name = ingredientName;
+            newIngredient.Quantity = quantity;
+            newIngredient.Unit = unit;
+
+            // add ingredient to the list (only if it is uniqe)
+            ingredients.Add(newIngredient);
+
+            // pass name and description of recipe to ViewBag
+            TempData["recipeName"] = recipeName;
+            TempData["description"] = description;
+
+            // refresh view
+            return RedirectToAction("NewRecipe");
         }
 
         private void ReadRecipeFile()

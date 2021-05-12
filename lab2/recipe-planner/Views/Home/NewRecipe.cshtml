@@ -1,22 +1,60 @@
-@model RecipeModel
+@model NewRecipeModelView
 
 @{
     ViewData["Title"] = "new recipe";
+
+    // fill fields with previously written data
+    Model.RecipeName = Convert.ToString(TempData["recipeName"]);
+    Model.Description = Convert.ToString(TempData["description"]);
 }
 
-<form asp-action="AddRecipe">
+<form method="POST">
     <div class="form-group">
-        <label for="Name" class="form-label">Name:</label>
-        @Html.TextBoxFor(m => m.Name, new { @class = "form-control"})
+        <label for="RecipeName" class="form-label">Name:</label>
+        <input asp-for="RecipeName" class="form-control" />
     </div>
     <div class="form-group">
         <label for="Description" class="form-label">Description:</label>
-        @Html.TextAreaFor(m => m.Description, new { @class = "form-control"})
+        <textarea asp-for="Description" class="form-control"></textarea>
     </div>
     <div>
         <label>Ingredients:</label>
-        <table class="table table-hover table-border">
-
+        <table class="table table-border">
+            <thead class="table-dark">
+                <tr>
+                    <th>Name</th>
+                    <th>Quantity</th>
+                    <th>Unit</th>
+                </tr>
+            </thead>
+            @foreach (var ingredient in ViewBag.ingredients)
+            {
+                <tr>
+                    <td>@ingredient.Name</td>
+                    <td>@ingredient.Quantity</td>
+                    <td>@ingredient.Unit</td>
+                </tr>
+            }
         </table>
     </div>
+    <div class="form-group">
+        <label for="IngredientName" class="form-label">Ingredient's name:</label>
+        <input asp-for="IngredientName" class="form-control" />
+    </div>
+    <div class="row">
+        <div class="col">
+            <div class="form-group">
+                <label for="Quantity" class="form-label">Quantity:</label>
+                <input type="number" min="0" step="0.1" asp-for="Quantity" class="form-control" />
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-group">
+                <label for="Unit" class="form-label">Unit:</label>
+                <input asp-for="Unit" class="form-control" />
+            </div>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary btn-lg" asp-action="AddIngredient">Add</button>
+    <button type="submit" class="btn btn-primary btn-lg" asp-action="AddRecipe">Add recipe</button>
 </form>
