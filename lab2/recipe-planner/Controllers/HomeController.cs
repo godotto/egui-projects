@@ -52,7 +52,7 @@ namespace recipe_planner.Controllers
             if (description != null)
             {
                 // remove \r characters from line breaks and save splited description to new recipe object
-                description = description.Replace('\r', '\0'); 
+                description = description.Replace('\r', '\0');
                 newRecipe.Description = description.Split('\n').ToList();
             }
             else // if description was empty, assign empty list
@@ -74,7 +74,8 @@ namespace recipe_planner.Controllers
             newIngredient.Unit = unit;
 
             // add ingredient to the list (only if it is uniqe)
-            ingredients.Add(newIngredient);
+            if (IsIngredientUnique(ingredientName, unit))
+                ingredients.Add(newIngredient);
 
             // pass name and description of recipe to ViewBag
             TempData["recipeName"] = recipeName;
@@ -140,6 +141,19 @@ namespace recipe_planner.Controllers
         private string CutUnit(string qunatityWithUnit)
         {
             return qunatityWithUnit.Substring(qunatityWithUnit.IndexOf(' ') + 1);
+        }
+
+        // check if ingredient is unique or not
+        private bool IsIngredientUnique(string name, string unit)
+        {
+            foreach (var ingredient in ingredients)
+            {
+                // if name is not unique, but unit is different it is a valid ingredient
+                if (ingredient.Name.Equals(name) && ingredient.Unit.Equals(unit))
+                    return false;
+            }
+
+            return true;
         }
     }
 }
