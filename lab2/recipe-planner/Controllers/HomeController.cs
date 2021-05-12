@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 
 using System.Text.Json;
-using System.Text.Encodings.Web;
-using System.Text.Unicode;
 
 using Microsoft.AspNetCore.Mvc;
 using recipe_planner.Models;
@@ -87,8 +85,11 @@ namespace recipe_planner.Controllers
             TempData["recipeName"] = recipeName;
             TempData["description"] = description;
 
-            // refresh view
-            return RedirectToAction("NewRecipe");
+            // if edite mode is active, redirect to edit mode with recipe's ID
+            if (Convert.ToString(TempData["mode"]) == "edit")
+                return RedirectToAction("EditRecipe", new {id = TempData["id"]});
+            else
+                return RedirectToAction("NewRecipe");
         }
 #nullable disable
 
@@ -111,6 +112,61 @@ namespace recipe_planner.Controllers
             ingredients.Clear();
             return RedirectToAction("Index");
         }
+
+        public IActionResult EditRecipe(int id)
+        {
+            // if recipe does not exist stay in the main view
+            if (id >= recipes.Count || id < 0)
+                return RedirectToAction("Index");
+
+            // create view model and fill it with recipe's data
+            var editViewModel = new NewRecipeModelView();
+            editViewModel.RecipeName = recipes[id].Name;
+            editViewModel.Description = String.Join("\n", recipes[id].Description);
+
+            if (ingredients.Count == 0)
+            {
+                foreach (var ingredient in recipes[id].Ingredients)
+                    ingredients.Add(new IngredientModel(ingredient));
+            }
+
+            // pass list of ingredients to view
+            ViewBag.ingredients = ingredients;
+
+            // set mode to edit and pass ID to TempData
+            TempData["mode"] = "edit";
+            TempData["id"] = id;
+
+            return View("NewRecipe", editViewModel);
+        }
+
+#nullable enable
+        [HttpPost]
+        public IActionResult EditRecipe(string recipeName, string? description)
+        {
+            // recipe to edit
+            var editedRecipe = recipes[Convert.ToInt32(TempData["id"])];
+            
+            // replace name of the recipe and its description
+            editedRecipe.Name = recipeName;
+
+            if (description != null)
+            {
+                // remove \r characters from line breaks and save splited description to new recipe object
+                description = description.Replace("\r", "");
+                editedRecipe.Description = description.Split('\n').ToList();
+            }
+            else // if description was empty, assign empty list
+                editedRecipe.Description = new List<string>();
+
+            // update ingredients
+            editedRecipe.Ingredients.Clear();
+            foreach (var ingredient in ingredients)
+                editedRecipe.Ingredients.Add(ingredient);
+
+            return RedirectToAction("Index");
+        }
+#nullable disable
 
         // read recipes from file
         private void ReadRecipesFromFile()

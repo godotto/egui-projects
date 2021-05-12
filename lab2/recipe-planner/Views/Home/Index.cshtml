@@ -13,7 +13,7 @@
                         <td>@Model[index].Name</td>
                         <td style="text-align: end;">
                             <div class="btn-group">
-                                <button class="btn btn-success btn">Edit</button>
+                                <a class="btn btn-success btn" asp-action="EditRecipe" asp-route-id="@index">Edit</a>
                                 <a class="btn btn-danger btn" asp-action="DeleteRecipe" asp-route-id="@index">Delete</a>
                             </div>
                         </td>
