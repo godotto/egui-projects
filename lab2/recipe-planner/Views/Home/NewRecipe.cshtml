@@ -29,15 +29,18 @@
                 <tr>
                     <th>Name</th>
                     <th>Quantity</th>
-                    <th>Unit</th>
+                    <th colspan="2">Unit</th>
                 </tr>
             </thead>
-            @foreach (var ingredient in ViewBag.ingredients)
+            @for (var index = 0; index < ViewBag.ingredients.Count; index++)
             {
                 <tr>
-                    <td>@ingredient.Name</td>
-                    <td>@ingredient.Quantity</td>
-                    <td>@ingredient.Unit</td>
+                    <td>@ViewBag.ingredients[index].Name</td>
+                    <td>@ViewBag.ingredients[index].Quantity</td>
+                    <td>@ViewBag.ingredients[index].Unit</td>
+                    <td style="text-align: end;">
+                        <a class="btn btn-danger btn" asp-action="DeleteIngredient" asp-route-id='@index'>Delete</a>
+                    </td>
                 </tr>
             }
         </table>

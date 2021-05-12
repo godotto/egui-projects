@@ -175,6 +175,15 @@ namespace recipe_planner.Controllers
         }
 #nullable disable
 
+        public IActionResult DeleteIngredient(int id)
+        {
+            // if recipe exists, remove ingredient from the list
+            if (id < recipes.Count && id >= 0)
+                ingredients.RemoveAt(id);
+            
+            return RedirectToAction("EditRecipe", new {id = TempData["id"]});
+        }
+
         // read recipes from file
         private void ReadRecipesFromFile()
         {
