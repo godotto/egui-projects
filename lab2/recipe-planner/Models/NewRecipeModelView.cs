@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace recipe_planner.Models
 {
     public class NewRecipeModelView   // model view for new recipe screen

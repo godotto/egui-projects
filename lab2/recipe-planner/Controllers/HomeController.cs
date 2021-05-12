@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 
 using System.Text.Json;
-using System.Text.Json.Serialization;
+using System.Text.Encodings.Web;
+using System.Text.Unicode;
 
 using Microsoft.AspNetCore.Mvc;
 using recipe_planner.Models;
@@ -13,31 +14,31 @@ namespace recipe_planner.Controllers
     public class HomeController : Controller
     {
         // list of recipe models
-        static List<RecipeModel> recipes = new List<RecipeModel>();
+        private static List<RecipeModel> recipes = new List<RecipeModel>();
 
         // list of ingredient models
-        static List<IngredientModel> ingredients = new List<IngredientModel>();
+        private static List<IngredientModel> ingredients = new List<IngredientModel>();
+
+        // object with JSON formatted recipes
+        private static JsonElement recipesJson;
 
         public HomeController()
         {
             // if list is empty, read recipes from JSON file
             if (recipes.Count == 0)
-                ReadRecipeFile();
+                ReadRecipesFromFile();
         }
 
         public IActionResult Index()
         {
+            WriteRecipesToFile();
             return View(recipes);
         }
 
         public IActionResult NewRecipe()
         {
-            // create new recipe model and add it to the list
-            // recipes.Add(new RecipeModel());
-
             // pass list of ingredients to view
             ViewBag.ingredients = ingredients;
-
             return View(new NewRecipeModelView());
         }
 
@@ -52,7 +53,7 @@ namespace recipe_planner.Controllers
             if (description != null)
             {
                 // remove \r characters from line breaks and save splited description to new recipe object
-                description = description.Replace('\r', '\0');
+                description = description.Replace("\r", "");
                 newRecipe.Description = description.Split('\n').ToList();
             }
             else // if description was empty, assign empty list
@@ -63,15 +64,15 @@ namespace recipe_planner.Controllers
             foreach (var ingredient in ingredients)
                 newRecipe.Ingredients.Add(ingredient);
 
-            // clear list of ingredients, add recipe to the list and return to the main view
+            // clear list of ingredients, add recipe to the list, save it to JSON file and return to the main view
             ingredients.Clear();
             recipes.Add(newRecipe);
+            // WriteRecipeFile();
             return RedirectToAction("Index");
         }
-#nullable disable
 
         [HttpPost]
-        public IActionResult AddIngredient(string ingredientName, float quantity, string unit, string recipeName, string description)
+        public IActionResult AddIngredient(string? ingredientName, float quantity, string? unit, string recipeName, string description)
         {
             // create new ingredient model and assign ingredient's name, quantity and unit
             var newIngredient = new IngredientModel();
@@ -79,8 +80,8 @@ namespace recipe_planner.Controllers
             newIngredient.Quantity = quantity;
             newIngredient.Unit = unit;
 
-            // add ingredient to the list (only if it is uniqe)
-            if (IsIngredientUnique(ingredientName, unit))
+            // add ingredient to the list (only if it is uniqe and non-empty)
+            if (ingredientName != null && unit != null && IsIngredientUnique(ingredientName, unit))
                 ingredients.Add(newIngredient);
 
             // pass name and description of recipe to ViewBag
@@ -90,6 +91,7 @@ namespace recipe_planner.Controllers
             // refresh view
             return RedirectToAction("NewRecipe");
         }
+#nullable disable
 
         [HttpPost]
         public IActionResult DiscardRecipe()
@@ -99,14 +101,15 @@ namespace recipe_planner.Controllers
             return RedirectToAction("Index");
         }
 
-        private void ReadRecipeFile()
+        // read recipes from file
+        private void ReadRecipesFromFile()
         {
             // read JSON file and deserialize it
-            var rawJson = System.IO.File.ReadAllText("recipes.json");
-            var deserializedJson = JsonSerializer.Deserialize<JsonElement>(rawJson);
+            var jsonString = System.IO.File.ReadAllText("recipes.json");
+            recipesJson = JsonSerializer.Deserialize<JsonElement>(jsonString);
 
             // fill list of models in loop
-            foreach (var recipeJson in deserializedJson.EnumerateObject())
+            foreach (var recipeJson in recipesJson.EnumerateObject())
             {
                 // create new recipe object and get the name of recipe
                 var newRecipe = new RecipeModel();
@@ -143,6 +146,32 @@ namespace recipe_planner.Controllers
                 // add recipe to the list
                 recipes.Add(newRecipe);
             }
+        }
+
+        // write recipes to file
+        private void WriteRecipesToFile()
+        {
+            var serializerOptions = new JsonSerializerOptions
+            {
+                WriteIndented = true
+            };
+
+            var recipesDictionary = new Dictionary<string, Dictionary<string, dynamic>>();
+
+            foreach (var recipe in recipes)
+            {
+                var recipeDictionary = new Dictionary<string, dynamic>();
+
+                recipeDictionary.Add("recipe", recipe.Description);
+
+                foreach (var ingredient in recipe.Ingredients)
+                    recipeDictionary.Add(ingredient.Name, Convert.ToString(ingredient.Quantity) + ' ' + ingredient.Unit);
+
+                recipesDictionary.Add(recipe.Name, recipeDictionary);
+            }
+
+            var jsonString = JsonSerializer.Serialize(recipesDictionary, serializerOptions);
+            System.IO.File.WriteAllText("recipes.json", jsonString);
         }
 
         // get quantity from string
