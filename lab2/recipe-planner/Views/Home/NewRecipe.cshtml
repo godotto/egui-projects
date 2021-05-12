@@ -55,6 +55,13 @@
             </div>
         </div>
     </div>
-    <button type="submit" class="btn btn-primary btn-lg" asp-action="AddIngredient">Add</button>
-    <button type="submit" class="btn btn-primary btn-lg" asp-action="AddRecipe">Add recipe</button>
+    <div class="row">
+        <div class="col">
+            <button type="submit" class="btn btn-primary btn-lg" asp-action="AddIngredient">Add ingredient</button>
+        </div>
+        <div class="col" style="text-align: end;">
+            <button type="submit" class="btn btn-success btn-lg" asp-action="AddRecipe">Add recipe</button>
+            <button type="submit" class="btn btn-danger btn-lg" asp-action="DiscardRecipe">Cancel</button>
+        </div>
+    </div>
 </form>

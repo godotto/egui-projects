@@ -33,7 +33,7 @@ namespace recipe_planner.Controllers
         public IActionResult NewRecipe()
         {
             // create new recipe model and add it to the list
-            recipes.Add(new RecipeModel());
+            // recipes.Add(new RecipeModel());
 
             // pass list of ingredients to view
             ViewBag.ingredients = ingredients;
@@ -46,7 +46,7 @@ namespace recipe_planner.Controllers
         public IActionResult AddRecipe(string recipeName, string? description)
         {
             // get new recipe model object and assign recipe's name
-            var newRecipe = recipes.Last<RecipeModel>();
+            var newRecipe = new RecipeModel();
             newRecipe.Name = recipeName;
 
             if (description != null)
@@ -58,8 +58,14 @@ namespace recipe_planner.Controllers
             else // if description was empty, assign empty list
                 newRecipe.Description = new List<string>();
 
-            // clear list of ingredients and return to the main view
+            // add ingredients to new recipe
+            newRecipe.Ingredients = new List<IngredientModel>();
+            foreach (var ingredient in ingredients)
+                newRecipe.Ingredients.Add(ingredient);
+
+            // clear list of ingredients, add recipe to the list and return to the main view
             ingredients.Clear();
+            recipes.Add(newRecipe);
             return RedirectToAction("Index");
         }
 #nullable disable
@@ -83,6 +89,14 @@ namespace recipe_planner.Controllers
 
             // refresh view
             return RedirectToAction("NewRecipe");
+        }
+
+        [HttpPost]
+        public IActionResult DiscardRecipe()
+        {
+            // clear ingredient list and return to main view
+            ingredients.Clear();
+            return RedirectToAction("Index");
         }
 
         private void ReadRecipeFile()
