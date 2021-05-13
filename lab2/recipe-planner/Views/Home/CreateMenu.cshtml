@@ -27,7 +27,7 @@
                     <tr>
                         <td>@ViewBag.recipesInMenu[index].Name</td>
                         <td style="text-align: end;">
-                            <button type="button" class="btn btn-danger btn">Remove</button>
+                            <a asp-action="RemoveRecipeFromMenu" asp-route-id="@index" class="btn btn-danger btn">Remove</a>
                         </td>
                     </tr>
                 }

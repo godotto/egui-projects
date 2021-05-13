@@ -27,8 +27,9 @@ namespace recipe_planner.Controllers
 
         public IActionResult Index()
         {
-            // clear ingredients list
+            // clear ingredients and recipes in menu lists
             ingredients.Clear();
+            recipesInMenu.Clear();
 
             // change indicator's value to default
             IsFirstEditActionRedirect = true;
@@ -201,13 +202,27 @@ namespace recipe_planner.Controllers
 
             // add ingredients of selected recipe
             foreach (var ingredient in recipes[id].Ingredients)
-                AddIngredientToMenu(ingredient);
+                AddIngredientToMenu(new IngredientModel(ingredient));
 
             // add recipe to the menu
             recipesInMenu.Add(recipes[id]);
             return RedirectToAction("CreateMenu");
         }
 
+        public IActionResult RemoveRecipeFromMenu(int id)
+        {
+            // if recipe does not exists do nothing
+            if (id >= recipesInMenu.Count || id < 0)
+                return RedirectToAction("CreateMenu");
+
+            // remove ingredients of selected recipe
+            foreach (var ingredient in recipesInMenu[id].Ingredients)
+                RemoveIngredientFromMenu(ingredient);
+
+            // remove recipe from the menu
+            recipesInMenu.RemoveAt(id);
+            return RedirectToAction("CreateMenu");
+        }
         // read recipes from file
         private void ReadRecipesFromFile()
         {
@@ -314,7 +329,7 @@ namespace recipe_planner.Controllers
             return true;
         }
 
-        // add ingredient on the list of ingredients in menu
+        // add ingredient to the list of ingredients in menu
         private void AddIngredientToMenu(IngredientModel ingredientToAdd)
         {
             // check if there is ingredient with the same name
@@ -330,6 +345,38 @@ namespace recipe_planner.Controllers
             }
 
             ingredients.Add(ingredientToAdd);
+        }
+
+        // remove ingredient from the list of ingredients in menu
+        private void RemoveIngredientFromMenu(IngredientModel ingredientToRemove)
+        {
+            foreach (var ingredient in ingredients)
+            {
+                if (ingredient.Name == ingredientToRemove.Name && ingredient.Unit == ingredientToRemove.Unit)
+                {
+                    if (ingredient.Quantity - ingredientToRemove.Quantity == 0)
+                        ingredients.RemoveAt(FindIngredient(ingredients, ingredientToRemove.Name, ingredientToRemove.Unit));
+                    else
+                        ingredient.Quantity -= ingredientToRemove.Quantity;
+
+                    return;
+                }
+            }
+        }
+
+        // auxiliary method, returns index of ingredient from list, given name and unit
+        private int FindIngredient(List<IngredientModel> ingredientList, string name, string unit)
+        {
+            int index = 0;
+            
+            foreach (var ingredient in ingredientList)
+            {
+                if (ingredient.Name == name && ingredient.Unit == unit)
+                    return index;
+                index++;
+            }
+
+            return -1;
         }
     }
 }
