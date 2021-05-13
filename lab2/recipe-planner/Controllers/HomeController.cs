@@ -232,11 +232,9 @@ namespace recipe_planner.Controllers
         {
             if (!System.IO.File.Exists("recipes.json"))
             {
-                using (System.IO.File.Create("recipes.json"))
-                {
-                    System.IO.File.WriteAllText("recipes.json", "{}");
-                }
-                return;
+                var file = System.IO.File.Create("recipes.json");
+                file.Close();
+                System.IO.File.WriteAllText("recipes.json", "{}");
             }
 
             // read JSON file and deserialize it
