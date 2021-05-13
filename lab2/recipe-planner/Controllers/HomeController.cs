@@ -11,14 +11,10 @@ namespace recipe_planner.Controllers
 {
     public class HomeController : Controller
     {
-        // list of recipe models
-        private static List<RecipeModel> recipes = new List<RecipeModel>();
-
-        // list of ingredient models
-        private static List<IngredientModel> ingredients = new List<IngredientModel>();
-
-        // object with JSON formatted recipes
-        private static JsonElement recipesJson;
+        private static List<RecipeModel> recipes = new List<RecipeModel>();             // list of recipe models
+        private static List<IngredientModel> ingredients = new List<IngredientModel>(); // list of ingredient models
+        private static JsonElement recipesJson;                                         // object with JSON formatted recipes
+        private static bool IsFirstEditActionRedirect;                                  // change from true to false after 1st redirect to action
 
         public HomeController()
         {
@@ -29,6 +25,8 @@ namespace recipe_planner.Controllers
 
         public IActionResult Index()
         {
+            // change indicator's value to default
+            IsFirstEditActionRedirect = true;
             return View(recipes);
         }
 
@@ -91,7 +89,7 @@ namespace recipe_planner.Controllers
 
             // if edite mode is active, redirect to edit mode with recipe's ID
             if (Convert.ToString(TempData["mode"]) == "edit")
-                return RedirectToAction("EditRecipe", new {id = TempData["id"]});
+                return RedirectToAction("EditRecipe", new { id = TempData["id"] });
             else
                 return RedirectToAction("NewRecipe");
         }
@@ -128,10 +126,13 @@ namespace recipe_planner.Controllers
             editViewModel.RecipeName = recipes[id].Name;
             editViewModel.Description = String.Join("\n", recipes[id].Description);
 
-            if (ingredients.Count == 0)
+            // if this action has been called for 1st time in a recipe, load ingredients 
+            if (IsFirstEditActionRedirect)
             {
                 foreach (var ingredient in recipes[id].Ingredients)
                     ingredients.Add(new IngredientModel(ingredient));
+
+                IsFirstEditActionRedirect = false;
             }
 
             // pass list of ingredients to view
@@ -150,7 +151,7 @@ namespace recipe_planner.Controllers
         {
             // recipe to edit
             var editedRecipe = recipes[Convert.ToInt32(TempData["id"])];
-            
+
             // replace name of the recipe and its description
             editedRecipe.Name = recipeName;
 
@@ -178,10 +179,13 @@ namespace recipe_planner.Controllers
         public IActionResult DeleteIngredient(int id)
         {
             // if recipe exists, remove ingredient from the list
-            if (id < recipes.Count && id >= 0)
+            if (id < ingredients.Count && id >= 0)
                 ingredients.RemoveAt(id);
-            
-            return RedirectToAction("EditRecipe", new {id = TempData["id"]});
+
+            if (Convert.ToString(TempData["mode"]) == "edit")
+                return RedirectToAction("EditRecipe", new { id = TempData["id"] });
+            else
+                return RedirectToAction("NewRecipe");
         }
 
         // read recipes from file

@@ -82,6 +82,6 @@
 </form>
 
 @{
-    if (Convert.ToString(TempData["mode"]) == "edit")
-        TempData["mode"] = "edit";
+    // keep current mode info from deleting
+    TempData.Keep("mode");
 }
