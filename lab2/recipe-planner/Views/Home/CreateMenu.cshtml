@@ -1,0 +1,59 @@
+@model List<RecipeModel>
+
+@{
+    ViewData["Title"] = "create menu";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-5">
+            <table class="table table-hover table-border">
+                @for (var index = 0; index < Model.Count; index++)
+                {
+                    <tr>
+                        <td>@Model[index].Name</td>
+                        <td style="text-align: end;">
+                            <a asp-action="AddRecipeToMenu" asp-route-id="@index" class="btn btn-success btn">Add</a>
+                        </td>
+                    </tr>
+                }
+            </table>
+        </div>
+        <div class="col-2"></div>
+        <div class="col-5">
+            <table class="table table-hover table-border">
+                @for (var index = 0; index < ViewBag.recipesInMenu.Count; index++)
+                {
+                    <tr>
+                        <td>@ViewBag.recipesInMenu[index].Name</td>
+                        <td style="text-align: end;">
+                            <button type="button" class="btn btn-danger btn">Remove</button>
+                        </td>
+                    </tr>
+                }
+            </table>
+        </div>
+    </div>
+    <div class="row">
+        <table class="table table-border">
+            <thead class="table-light">
+                <tr>
+                    <th>Name</th>
+                    <th>Quantity</th>
+                    <th>Unit</th>
+                </tr>
+            </thead>
+            @foreach (var ingredient in ViewBag.ingredients)
+            {
+                <tr>
+                    <td>@ingredient.Name</td>
+                    <td>@ingredient.Quantity</td>
+                    <td>@ingredient.Unit</td>
+                </tr>
+            }
+        </table>
+    </div>
+</div>
+<div style="text-align: end;">
+    <a asp-action="Index" class="btn btn-primary btn">Close</a>
+</div>

@@ -16,6 +16,8 @@ namespace recipe_planner.Controllers
         private static JsonElement recipesJson;                                         // object with JSON formatted recipes
         private static bool IsFirstEditActionRedirect;                                  // change from true to false after 1st redirect to action
 
+        private static List<RecipeModel> recipesInMenu = new List<RecipeModel>();       // list of recipes added to menu
+
         public HomeController()
         {
             // if list is empty, read recipes from JSON file
@@ -25,6 +27,9 @@ namespace recipe_planner.Controllers
 
         public IActionResult Index()
         {
+            // clear ingredients list
+            ingredients.Clear();
+
             // change indicator's value to default
             IsFirstEditActionRedirect = true;
             return View(recipes);
@@ -107,14 +112,6 @@ namespace recipe_planner.Controllers
             return RedirectToAction("Index");
         }
 
-        [HttpPost]
-        public IActionResult DiscardRecipe()
-        {
-            // clear ingredient list and return to main view
-            ingredients.Clear();
-            return RedirectToAction("Index");
-        }
-
         public IActionResult EditRecipe(int id)
         {
             // if recipe does not exist stay in the main view
@@ -178,7 +175,7 @@ namespace recipe_planner.Controllers
 
         public IActionResult DeleteIngredient(int id)
         {
-            // if recipe exists, remove ingredient from the list
+            // if ingredient exists, remove it from the list
             if (id < ingredients.Count && id >= 0)
                 ingredients.RemoveAt(id);
 
@@ -186,6 +183,29 @@ namespace recipe_planner.Controllers
                 return RedirectToAction("EditRecipe", new { id = TempData["id"] });
             else
                 return RedirectToAction("NewRecipe");
+        }
+
+        public IActionResult CreateMenu()
+        {
+            // pass list of added recipes and ingredients to the view
+            ViewBag.recipesInMenu = recipesInMenu;
+            ViewBag.ingredients = ingredients;
+            return View(recipes);
+        }
+
+        public IActionResult AddRecipeToMenu(int id)
+        {
+            // if recipe does not exists do nothing
+            if (id >= recipes.Count || id < 0)
+                return RedirectToAction("CreateMenu");
+
+            // add ingredients of selected recipe
+            foreach (var ingredient in recipes[id].Ingredients)
+                AddIngredientToMenu(ingredient);
+
+            // add recipe to the menu
+            recipesInMenu.Add(recipes[id]);
+            return RedirectToAction("CreateMenu");
         }
 
         // read recipes from file
@@ -292,6 +312,24 @@ namespace recipe_planner.Controllers
             }
 
             return true;
+        }
+
+        // add ingredient on the list of ingredients in menu
+        private void AddIngredientToMenu(IngredientModel ingredientToAdd)
+        {
+            // check if there is ingredient with the same name
+            // if not, just add it to the list
+            foreach (var ingredient in ingredients)
+            {
+                // if name and unit is the same add to the exisiting
+                if (ingredient.Name == ingredientToAdd.Name && ingredient.Unit == ingredientToAdd.Unit)
+                {
+                    ingredient.Quantity += ingredientToAdd.Quantity;
+                    return;
+                }
+            }
+
+            ingredients.Add(ingredientToAdd);
         }
     }
 }
