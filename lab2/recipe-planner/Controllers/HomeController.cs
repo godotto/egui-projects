@@ -226,6 +226,15 @@ namespace recipe_planner.Controllers
         // read recipes from file
         private void ReadRecipesFromFile()
         {
+            if (!System.IO.File.Exists("recipes.json"))
+            {
+                using (System.IO.File.Create("recipes.json"))
+                {
+                    System.IO.File.WriteAllText("recipes.json", "{}");
+                }
+                return;
+            }
+
             // read JSON file and deserialize it
             var jsonString = System.IO.File.ReadAllText("recipes.json");
             recipesJson = JsonSerializer.Deserialize<JsonElement>(jsonString);
@@ -368,7 +377,7 @@ namespace recipe_planner.Controllers
         private int FindIngredient(List<IngredientModel> ingredientList, string name, string unit)
         {
             int index = 0;
-            
+
             foreach (var ingredient in ingredientList)
             {
                 if (ingredient.Name == name && ingredient.Unit == unit)
