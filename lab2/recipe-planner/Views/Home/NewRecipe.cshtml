@@ -39,7 +39,7 @@
                     <td>@ViewBag.ingredients[index].Quantity</td>
                     <td>@ViewBag.ingredients[index].Unit</td>
                     <td style="text-align: end;">
-                        <a class="btn btn-danger btn" asp-action="DeleteIngredient" asp-route-id='@index'>Delete</a>
+                        <button type="submit" class="btn btn-danger btn" asp-action="DeleteIngredient" asp-route-id='@index'>Delete</button>
                     </td>
                 </tr>
             }

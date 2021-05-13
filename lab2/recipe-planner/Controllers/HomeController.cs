@@ -89,7 +89,7 @@ namespace recipe_planner.Controllers
             if (ingredientName != null && unit != null && IsIngredientUnique(ingredientName, unit))
                 ingredients.Add(newIngredient);
 
-            // pass name and description of recipe to ViewBag
+            // pass name and description of recipe to TempData
             TempData["recipeName"] = recipeName;
             TempData["description"] = description;
 
@@ -174,11 +174,15 @@ namespace recipe_planner.Controllers
         }
 #nullable disable
 
-        public IActionResult DeleteIngredient(int id)
+        public IActionResult DeleteIngredient(int id, string recipeName, string description)
         {
             // if ingredient exists, remove it from the list
             if (id < ingredients.Count && id >= 0)
                 ingredients.RemoveAt(id);
+
+            // pass name and description of recipe to TempData
+            TempData["recipeName"] = recipeName;
+            TempData["description"] = description;
 
             if (Convert.ToString(TempData["mode"]) == "edit")
                 return RedirectToAction("EditRecipe", new { id = TempData["id"] });
