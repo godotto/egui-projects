@@ -70,10 +70,22 @@ namespace recipe_planner.Controllers
                 newRecipe.Ingredients.Add(ingredient);
 
             // clear list of ingredients, add recipe to the list, save it to JSON file and return to the main view
-            ingredients.Clear();
-            recipes.Add(newRecipe);
-            WriteRecipesToFile();
-            return RedirectToAction("Index");
+            // only if name is unique
+            if (IsRecipeUnique(recipeName))
+            {
+                ingredients.Clear();
+                recipes.Add(newRecipe);
+                WriteRecipesToFile();
+                return RedirectToAction("Index");
+            }
+            else
+            {
+                // pass name and description of recipe to TempData
+                TempData["recipeName"] = recipeName;
+                TempData["description"] = description;
+                return RedirectToAction("NewRecipe");
+            }
+
         }
 
         [HttpPost]
@@ -149,6 +161,14 @@ namespace recipe_planner.Controllers
         {
             // recipe to edit
             var editedRecipe = recipes[Convert.ToInt32(TempData["id"])];
+
+            if (!IsRecipeUnique(recipeName) && recipeName != editedRecipe.Name)
+            {
+                // pass name and description of recipe to TempData
+                TempData["recipeName"] = recipeName;
+                TempData["description"] = description;
+                return RedirectToAction("EditRecipe", new { id = TempData["id"] });
+            }
 
             // replace name of the recipe and its description
             editedRecipe.Name = recipeName;
@@ -388,6 +408,18 @@ namespace recipe_planner.Controllers
             }
 
             return -1;
+        }
+
+        // check if recipe is unique
+        private bool IsRecipeUnique(string name)
+        {
+            foreach (var recipe in recipes)
+            {
+                if (recipe.Name == name)
+                    return false;
+            }
+
+            return true;
         }
     }
 }
