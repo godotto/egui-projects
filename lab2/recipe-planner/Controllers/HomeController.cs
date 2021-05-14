@@ -49,11 +49,11 @@ namespace recipe_planner.Controllers
 
 #nullable enable
         [HttpPost]
-        public IActionResult AddRecipe(string recipeName, string? description)
+        public IActionResult AddRecipe(string? recipeName, string? description)
         {
             // get new recipe model object and assign recipe's name
             var newRecipe = new RecipeModel();
-            newRecipe.Name = recipeName;
+            
 
             if (description != null)
             {
@@ -63,6 +63,11 @@ namespace recipe_planner.Controllers
             }
             else // if description was empty, assign empty list
                 newRecipe.Description = new List<string>();
+
+            if (recipeName == null)
+                newRecipe.Name = "";
+            else
+                newRecipe.Name = recipeName;
 
             // add ingredients to new recipe
             newRecipe.Ingredients = new List<IngredientModel>();
@@ -89,7 +94,7 @@ namespace recipe_planner.Controllers
         }
 
         [HttpPost]
-        public IActionResult AddIngredient(string? ingredientName, float quantity, string? unit, string recipeName, string description)
+        public IActionResult AddIngredient(string? ingredientName, float quantity, string? unit, string? recipeName, string description)
         {
             // create new ingredient model and assign ingredient's name, quantity and unit
             var newIngredient = new IngredientModel();
@@ -102,7 +107,11 @@ namespace recipe_planner.Controllers
                 ingredients.Add(newIngredient);
 
             // pass name and description of recipe to TempData
-            TempData["recipeName"] = recipeName;
+            if (recipeName == null)
+                TempData["recipeName"] = "";
+            else
+                TempData["recipeName"] = recipeName;
+
             TempData["description"] = description;
 
             // if edite mode is active, redirect to edit mode with recipe's ID
@@ -157,7 +166,7 @@ namespace recipe_planner.Controllers
 
 #nullable enable
         [HttpPost]
-        public IActionResult EditRecipe(string recipeName, string? description)
+        public IActionResult EditRecipe(string? recipeName, string? description)
         {
             // recipe to edit
             var editedRecipe = recipes[Convert.ToInt32(TempData["id"])];
@@ -165,13 +174,18 @@ namespace recipe_planner.Controllers
             if (!IsRecipeUnique(recipeName) && recipeName != editedRecipe.Name)
             {
                 // pass name and description of recipe to TempData
-                TempData["recipeName"] = recipeName;
+                if (recipeName == null)
+                    TempData["recipeName"] = "";
+
                 TempData["description"] = description;
                 return RedirectToAction("EditRecipe", new { id = TempData["id"] });
             }
 
             // replace name of the recipe and its description
-            editedRecipe.Name = recipeName;
+            if (recipeName == null)
+                editedRecipe.Name = "";
+            else
+                editedRecipe.Name = recipeName;
 
             if (description != null)
             {
