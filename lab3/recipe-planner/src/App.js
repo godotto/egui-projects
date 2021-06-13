@@ -1,25 +1,59 @@
-import logo from "./logo.svg";
-import "./App.css";
+import React from "react";
+import MainView from "./MainView";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+class App extends React.Component {
+    constructor(props) {
+        // call Component's constructor
+        super(props);
+
+        this.state = {
+            recipes: []
+        };
+    }
+
+    componentDidMount() {
+        // read fetch recipes
+        this.readRecipeNames();
+    }
+
+    // fetch recipe names from backend server
+    readRecipeNames() {
+        fetch("/recipes.json")
+            .then((res) => res.json())
+            .then((json) => {
+                let fetchedRecipes = [];
+
+                for (const recipe in json) {
+                    fetchedRecipes.push(recipe);
+                }
+
+                this.setState({ recipes: fetchedRecipes });
+            });
+    }
+
+    // render app view
+    render() {
+        // select content based on route
+        let content;
+        if (window.location.pathname === "/") {
+            content = <MainView recipes={this.state.recipes} />;
+        }
+
+        return (
+            <>
+                <header>
+                    <nav className="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+                        <div className="container">Recipe planner</div>
+                    </nav>
+                </header>
+                <div className="container">
+                    <main role="main" className="pb-3">
+                        {content}
+                    </main>
+                </div>
+            </>
+        );
+    }
 }
 
 export default App;
