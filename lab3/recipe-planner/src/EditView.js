@@ -3,17 +3,22 @@ import React from "react";
 class EditView extends React.Component {
     constructor(props) {
         super(props);
-        
+
         // state with form values
         this.state = {
             recipeName: "",
             recipeDescription: [],
-            ingredients: []
+            ingredients: [],
+            ingredientName: "",
+            ingredientQuantity: 0,
+            ingredientUnit: ""
         };
 
         // bind handlers
         this.handleInputChange = this.handleInputChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.handleAddIngredientButton =
+            this.handleAddIngredientButton.bind(this);
     }
 
     // handle all input changes
@@ -32,6 +37,7 @@ class EditView extends React.Component {
         });
     }
 
+    // handle submit event
     handleSubmit(event) {
         // prevent default submit event
         event.preventDefault();
@@ -52,14 +58,157 @@ class EditView extends React.Component {
         fetch("/add", requestOptions);
     }
 
+    // handle ingredient adding
+    handleAddIngredientButton() {
+        // if ingredient is not unique, do not add it
+        if (!this.isIngredientUnique()) return;
+
+        // else add ingredient to the ingredients list and clear input fields
+        let ingredient = {
+            [this.state.ingredientName]: this.state.ingredientQuantity
+                .toString()
+                .concat(" ", this.state.ingredientUnit)
+        };
+
+        this.setState({
+            ingredients: [...this.state.ingredients, ingredient],
+            ingredientName: "",
+            ingredientQuantity: 0,
+            ingredientUnit: ""
+        });
+    }
+
+    // checking whether ingredient is unique
+    isIngredientUnique() {
+        let ingredients = this.state.ingredients;
+
+        for (
+            let ingredientIndex = 0;
+            ingredientIndex < ingredients.length;
+            ingredientIndex++
+        ) {
+            // get ingredient's name
+            let ingredientName = Object.keys(ingredients[ingredientIndex])[0];
+
+            // split quantity and unit
+            let unitWithQuantity =
+                ingredients[ingredientIndex][ingredientName].split(" ");
+
+            // if ingredient's name and unit are already present, do not add such ingredient
+            if (
+                ingredientName === this.state.ingredientName &&
+                unitWithQuantity[1] === this.state.ingredientUnit
+            )
+                return false;
+        }
+        return true;
+    }
+
+    // ingredients table generator
+    ingredientsTable() {
+        let tableContent = [];
+        let ingredients = this.state.ingredients;
+
+        for (
+            let ingredientIndex = 0;
+            ingredientIndex < ingredients.length;
+            ingredientIndex++
+        ) {
+            // get ingredient's name
+            let ingredientName = Object.keys(ingredients[ingredientIndex])[0];
+
+            // split quantity and unit
+            let unitWithQuantity =
+                ingredients[ingredientIndex][ingredientName].split(" ");
+
+            tableContent.push(
+                <tr>
+                    <td>{ingredientName}</td>
+                    <td>{unitWithQuantity[0]}</td>
+                    <td>{unitWithQuantity[1]}</td>
+                    <td style={{ textAlign: "end" }}>
+                        <button type="submit" className="btn btn-danger btn">
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+            );
+        }
+
+        return tableContent;
+    }
+
+    // new ingredient subform generator
+    ingredientsForm() {
+        return (
+            <>
+                <div>
+                    <label>Ingredients:</label>
+                    <table className="table table-border">
+                        <thead className="table-light">
+                            <tr>
+                                <th>Name</th>
+                                <th>Quantity</th>
+                                <th colSpan="2">Unit</th>
+                            </tr>
+                        </thead>
+                        <tbody>{this.ingredientsTable()}</tbody>
+                    </table>
+                </div>
+                <div className="form-group">
+                    <label className="form-label">Ingredient's name:</label>
+                    <input
+                        name="ingredientName"
+                        type="text"
+                        value={this.state.ingredientName}
+                        onChange={this.handleInputChange}
+                        className="form-control"
+                    />
+                </div>
+                <div className="row">
+                    <div className="col">
+                        <div className="form-group">
+                            <label className="form-label">Quantity:</label>
+                            <input
+                                name="ingredientQuantity"
+                                type="number"
+                                value={this.state.ingredientQuantity}
+                                min="0"
+                                step="0.1"
+                                onChange={this.handleInputChange}
+                                className="form-control"
+                            />
+                        </div>
+                    </div>
+                    <div className="col">
+                        <div className="form-group">
+                            <label className="form-label">Unit:</label>
+                            <input
+                                name="ingredientUnit"
+                                type="text"
+                                value={this.state.ingredientUnit}
+                                onChange={this.handleInputChange}
+                                className="form-control"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </>
+        );
+    }
+
     // buttons row generator
     buttons() {
         return (
             <div className="row">
                 <div className="col">
-                    {/* <button className="btn btn-primary btn-lg">
+                    <button
+                        type="button"
+                        onClick={this.handleAddIngredientButton}
+                        className="btn btn-primary btn-lg"
+                    >
                         Add ingredient
-                    </button> */}
+                    </button>
                 </div>
                 <div className="col" style={{ textAlign: "end" }}>
                     <button type="submit" className="btn btn-success btn-lg">
@@ -78,7 +227,7 @@ class EditView extends React.Component {
         return (
             <form method="POST" onSubmit={this.handleSubmit}>
                 <div className="form-group">
-                    <label>Name:</label>
+                    <label className="form-label">Name:</label>
                     <input
                         name="recipeName"
                         type="text"
@@ -88,7 +237,7 @@ class EditView extends React.Component {
                     />
                 </div>
                 <div className="form-group">
-                    <label>Description:</label>
+                    <label className="form-label">Description:</label>
                     <textarea
                         name="recipeDescription"
                         style={{ height: "120px" }}
@@ -97,7 +246,7 @@ class EditView extends React.Component {
                         onChange={this.handleInputChange}
                     />
                 </div>
-                <div />
+                {this.ingredientsForm()}
                 {this.buttons()}
             </form>
         );
