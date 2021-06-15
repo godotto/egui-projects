@@ -1,5 +1,6 @@
 import React from "react";
 import MainView from "./MainView";
+import EditView from "./EditView";
 
 class App extends React.Component {
     constructor(props) {
@@ -37,6 +38,9 @@ class App extends React.Component {
         let content;
         if (window.location.pathname === "/") {
             content = <MainView recipes={this.state.recipes} />;
+        }
+        else if (window.location.pathname === "/new_recipe") {
+            content = <EditView mode="0" />;
         }
 
         return (

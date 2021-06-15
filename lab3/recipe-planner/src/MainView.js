@@ -14,7 +14,7 @@ class MainView extends React.Component {
                 <tr>
                     <td>{this.props.recipes[recipeIndex]}</td>
                     <td style={{ textAlign: "end" }}>
-                        <div class="btn-group">
+                        <div className="btn-group">
                             <button
                                 type="button"
                                 className="btn btn-success btn"
@@ -40,7 +40,12 @@ class MainView extends React.Component {
     menu() {
         return (
             <div className="btn-group-vertical">
-                <button className="btn btn-outline-primary btn-lg">Add</button>
+                <a
+                    className="btn btn-outline-primary btn-lg"
+                    href="/new_recipe"
+                >
+                    Add
+                </a>
                 <button className="btn btn-outline-primary btn-lg">
                     Create menu
                 </button>
