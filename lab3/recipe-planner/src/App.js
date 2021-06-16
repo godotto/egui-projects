@@ -3,41 +3,12 @@ import MainView from "./MainView";
 import EditView from "./EditView";
 
 class App extends React.Component {
-    constructor(props) {
-        // call Component's constructor
-        super(props);
-
-        this.state = {
-            recipes: []
-        };
-    }
-
-    componentDidMount() {
-        // read fetch recipes
-        this.readRecipeNames();
-    }
-
-    // fetch recipe names from backend server
-    readRecipeNames() {
-        fetch("/recipes.json")
-            .then((res) => res.json())
-            .then((json) => {
-                let fetchedRecipes = [];
-
-                for (const recipe in json) {
-                    fetchedRecipes.push(recipe);
-                }
-
-                this.setState({ recipes: fetchedRecipes });
-            });
-    }
-
     // render app view
     render() {
         // select content based on route
         let content;
         if (window.location.pathname === "/") {
-            content = <MainView recipes={this.state.recipes} />;
+            content = <MainView />;
         }
         else if (window.location.pathname === "/new_recipe") {
             content = <EditView mode="0" />;

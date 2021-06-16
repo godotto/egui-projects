@@ -6,6 +6,7 @@ const app = express();
 
 // use body parser to get JSON object from client
 app.use(express.json());
+app.use(express.text());
 
 // get file with recipes
 app.get("/recipes.json", (_req, res) => {
@@ -27,5 +28,19 @@ app.post("/add", (req, _res) => {
     let rawData = JSON.stringify(recipes, null, 4);
     fs.writeFileSync("recipes.json", rawData);
 });
+
+// delete recipe
+app.post("/delete", (req, _res) => {
+    // get recipe's content
+    let fetchedRecipeName = req.body;
+
+    // get recipes.json file to modify
+    let recipes = JSON.parse(fs.readFileSync("recipes.json"));
+    delete recipes[fetchedRecipeName];
+
+    // update JSON file
+    let rawData = JSON.stringify(recipes, null, 4);
+    fs.writeFileSync("recipes.json", rawData);
+})
 
 app.listen(5000);
