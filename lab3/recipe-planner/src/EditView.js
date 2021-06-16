@@ -49,6 +49,22 @@ class EditView extends React.Component {
             }
         };
 
+        let ingredients = this.state.ingredients;
+
+        // push ingredients
+        for (
+            let ingredientIndex = 0;
+            ingredientIndex < ingredients.length;
+            ingredientIndex++
+        ) {
+            // get ingredient's name
+            let ingredientName = Object.keys(ingredients[ingredientIndex])[0];
+
+            // add to the new recipe object
+            recipe[this.state.recipeName][ingredientName] =
+                ingredients[ingredientIndex][ingredientName];
+        }
+
         // use Fetch API to send it to the backend server
         const requestOptions = {
             method: "POST",
@@ -56,6 +72,9 @@ class EditView extends React.Component {
             body: JSON.stringify(recipe)
         };
         fetch("/add", requestOptions);
+
+        // redirect to main page
+        window.location.href = "/";
     }
 
     // handle ingredient adding
