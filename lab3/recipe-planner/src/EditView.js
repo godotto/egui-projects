@@ -97,6 +97,19 @@ class EditView extends React.Component {
         });
     }
 
+    // handle ingredient deletion
+    handleDeleteButton(id, event) {
+        // prevent default submit event
+        event.preventDefault();
+        
+        // remove ingredient from array and update that array
+        let ingredients = this.state.ingredients;
+        ingredients.splice(id, 1);
+        this.setState({
+            ingredients: ingredients
+        })
+    }
+
     // checking whether ingredient is unique
     isIngredientUnique() {
         let ingredients = this.state.ingredients;
@@ -146,7 +159,11 @@ class EditView extends React.Component {
                     <td>{unitWithQuantity[0]}</td>
                     <td>{unitWithQuantity[1]}</td>
                     <td style={{ textAlign: "end" }}>
-                        <button type="submit" className="btn btn-danger btn">
+                        <button
+                            type="submit"
+                            onClick={(event) => this.handleDeleteButton(ingredientIndex, event)}
+                            className="btn btn-danger btn"
+                        >
                             Delete
                         </button>
                     </td>
