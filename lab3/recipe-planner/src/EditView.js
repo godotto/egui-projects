@@ -235,6 +235,10 @@ class EditView extends React.Component {
 
     // buttons row generator
     buttons() {
+        // determine which caption should be on the button
+        let caption = this.props.mode === "new" ? "Add recipe" : "Edit recipe";
+        console.log(this.props.mode);
+
         return (
             <div className="row">
                 <div className="col">
@@ -248,7 +252,7 @@ class EditView extends React.Component {
                 </div>
                 <div className="col" style={{ textAlign: "end" }}>
                     <button type="submit" className="btn btn-success btn-lg">
-                        Add recipe
+                        {caption}
                     </button>
                     <a className="btn btn-danger btn-lg" href="/">
                         Cancel

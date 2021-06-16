@@ -65,12 +65,9 @@ class MainView extends React.Component {
                     <td>{this.state.recipes[recipeIndex]}</td>
                     <td style={{ textAlign: "end" }}>
                         <div className="btn-group">
-                            <button
-                                type="button"
-                                className="btn btn-success btn"
-                            >
+                            <a href={"/edit_recipe/?name=" + this.state.recipes[recipeIndex]} type="button" className="btn btn-success btn">
                                 Edit
-                            </button>
+                            </a>
                             <button
                                 type="button"
                                 onClick={this.handleDeleteRecipeButton.bind(

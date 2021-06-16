@@ -9,9 +9,10 @@ class App extends React.Component {
         let content;
         if (window.location.pathname === "/") {
             content = <MainView />;
-        }
-        else if (window.location.pathname === "/new_recipe") {
-            content = <EditView mode="0" />;
+        } else if (window.location.pathname === "/new_recipe") {
+            content = <EditView mode="new" />;
+        } else if (window.location.pathname === "/edit_recipe/") {
+            content = <EditView mode="edit" />;
         }
 
         return (
